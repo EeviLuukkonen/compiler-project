@@ -26,9 +26,48 @@ def parse(tokens: list[Token]) -> ast.Expression:
         return token
 
     def parse_expression() -> ast.Expression:
+        left = parse_and()
+
+        while peek().text == 'or':
+            operator = consume().text
+            right = parse_and()
+            left = ast.BinaryOp(
+                left,
+                operator,
+                right
+            )
+        return left
+
+    def parse_and() -> ast.Expression:
+        left = parse_eq_comparison()
+
+        while peek().text == 'and':
+            operator = consume().text
+            right = parse_eq_comparison()
+            left = ast.BinaryOp(
+                left,
+                operator,
+                right
+            )
+        return left
+    
+    def parse_eq_comparison() -> ast.Expression:
+        left = parse_comparison()
+
+        while peek().text in ['!=', '==']:
+            operator = consume().text
+            right = parse_comparison()
+            left = ast.BinaryOp(
+                left,
+                operator,
+                right
+            )
+        return left
+
+    def parse_comparison() -> ast.Expression:
         left = parse_polynomial()
 
-        while peek().text in ['<', '>', '<=', '>=']:
+        while peek().text in ['<', '>', '<=', '>=', '>=']:
             operator_token = consume()
             operator = operator_token.text
 
@@ -43,24 +82,19 @@ def parse(tokens: list[Token]) -> ast.Expression:
     
     def parse_polynomial() -> ast.Expression:
         left = parse_term()
-
         while peek().text in ['+', '-']:
-            operator_token = consume()
-            operator = operator_token.text
-
+            operator = consume().text
             right = parse_term()
-
             left = ast.BinaryOp(
                 left,
                 operator,
                 right
             )
-        
         return left
 
     def parse_term() -> ast.Expression:
         left = parse_factor()
-        while peek().text in ['*', '/']:
+        while peek().text in ['*', '/', '%']:
             operator_token = consume()
             operator = operator_token.text
             right = parse_factor()
