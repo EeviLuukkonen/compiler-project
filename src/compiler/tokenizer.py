@@ -1,5 +1,5 @@
 import re
-from typing import Literal, cast, Any
+from typing import Literal, cast, Any, Optional
 from dataclasses import dataclass
 
 TokenType = Literal['int_literal', 'identifier', 'operator', 'punctuation', 'end']
@@ -21,7 +21,7 @@ L = Location(line=1, column=1)
 class Token:
     text: str
     type: TokenType
-    loc: Location
+    loc: Optional[Location] = None
 
     def __eq__(self, other: Any) -> bool:
         if self.loc == L or other.loc == L:

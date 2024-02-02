@@ -1,3 +1,4 @@
+from typing import List, Any
 from compiler import ast
 from compiler.tokenizer import Token
 
@@ -6,6 +7,8 @@ def parse(tokens: list[Token]) -> ast.Expression:
     pos = 0
 
     def peek() -> Token:
+        if len(tokens) == 0:
+            return Token(type='end', text='')
         if pos < len(tokens):
             return tokens[pos]
         else:
@@ -76,7 +79,12 @@ def parse(tokens: list[Token]) -> ast.Expression:
         elif peek().type == 'int_literal':
             return parse_int_literal()
         elif peek().type == 'identifier':
-            return parse_identifier()
+            identifier = parse_identifier()
+            if peek().text == '(': # function call
+                return parse_arguments(identifier)
+            return identifier
+        elif peek().loc == None:
+            raise Exception(f'Empty input!')
         else:
             raise Exception(f'{peek().loc}: expected an integer literal or an identifier')
         
@@ -114,4 +122,21 @@ def parse(tokens: list[Token]) -> ast.Expression:
         else:
             raise Exception(f'Expected integer literal, found "{token.text}"')
     
-    return parse_expression()
+    def parse_arguments(call: Any) -> ast.FunctionCall:
+        consume('(')
+        args: List[ast.Expression] = []
+
+        while peek().text != ')':
+            if args:
+                consume(',')
+            arg = parse_expression()
+            args.append(arg)
+        consume(')')
+        return ast.FunctionCall(call, args)
+
+    result = parse_expression()
+
+    if pos == len(tokens):
+        return result
+    else:
+        raise Exception(f'Unknown syntax at the end of the code: {tokens[pos].loc}')

@@ -28,6 +28,15 @@ def test_tokenizer_punctuation() -> None:
         Token(type='punctuation', text=')', loc=L),
     ]
 
+    assert tokenize("2 * f(x)") == [
+        Token(type='int_literal', text='2', loc=L),
+        Token(type='operator', text='*', loc=L),
+        Token(type='identifier', text='f', loc=L),
+        Token(type='punctuation', text='(', loc=L),
+        Token(type='identifier', text='x', loc=L),
+        Token(type='punctuation', text=')', loc=L),
+    ]    
+
 def test_tokenizer_commments() -> None:
     assert tokenize("3x+1 # comment") == [
         Token(type='int_literal', text='3', loc=L),
