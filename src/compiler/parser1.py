@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import List
 from compiler import ast
 from compiler.tokenizer import Token
 
@@ -25,7 +25,20 @@ def parse(tokens: list[Token]) -> ast.Expression:
         pos += 1
         return token
 
-    def parse_expression() -> ast.Expression:
+    def parse_expression(left: ast.Expression) -> ast.Expression:
+        if peek().text == '=':
+            operator = consume().text
+            right = parse_expression(parse_or())
+            return ast.BinaryOp(
+                left,
+                operator,
+                right
+            )
+        else:
+            return left
+
+
+    def parse_or() -> ast.Expression:
         left = parse_and()
 
         while peek().text == 'or':
@@ -93,17 +106,29 @@ def parse(tokens: list[Token]) -> ast.Expression:
         return left
 
     def parse_term() -> ast.Expression:
-        left = parse_factor()
+        left = parse_unary()
         while peek().text in ['*', '/', '%']:
             operator_token = consume()
             operator = operator_token.text
-            right = parse_factor()
+            right = parse_unary()
             left = ast.BinaryOp(
                 left,
                 operator,
                 right
             )
         return left
+    
+    def parse_unary() -> ast.Expression:
+        if peek().text in ['not', '-']:
+            operator = consume().text
+            right = parse_unary()
+            left = ast.UnaryOp(
+                operator,
+                right
+            )
+            return left
+        else:
+            return parse_factor()
 
     def parse_factor() -> ast.Expression:
         if peek().text == '(':
@@ -124,12 +149,12 @@ def parse(tokens: list[Token]) -> ast.Expression:
         
     def parse_if() -> ast.Expression:
         consume('if')
-        cond = parse_expression()
+        cond = parse_expression(parse_or())
         consume('then')
-        then_clause = parse_expression()
+        then_clause = parse_expression(parse_or())
         if peek().text == "else":
             consume('else')
-            else_clause = parse_expression()
+            else_clause = parse_expression(parse_or())
         else:
             else_clause = None
         return ast.IfExpression(cond, then_clause, else_clause)
@@ -156,19 +181,19 @@ def parse(tokens: list[Token]) -> ast.Expression:
         else:
             raise Exception(f'Expected integer literal, found "{token.text}"')
     
-    def parse_arguments(call: Any) -> ast.FunctionCall:
+    def parse_arguments(call: ast.Identifier) -> ast.FunctionCall:
         consume('(')
         args: List[ast.Expression] = []
 
         while peek().text != ')':
             if args:
                 consume(',')
-            arg = parse_expression()
+            arg = parse_expression(parse_or())
             args.append(arg)
         consume(')')
         return ast.FunctionCall(call, args)
 
-    result = parse_expression()
+    result = parse_expression(parse_or())
 
     if pos == len(tokens):
         return result

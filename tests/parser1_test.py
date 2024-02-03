@@ -268,8 +268,32 @@ def test_parser_and_or() -> None:
         )
     )
 
+def test_parser_unary() -> None:
+    assert parse(tokenize('not 3')) == ast.UnaryOp(
+        op='not',
+        right=ast.Literal(3)
+    )
+    assert parse(tokenize('- 3')) == ast.UnaryOp(
+        op='-',
+        right=ast.Literal(3)
+    )  
+    assert parse(tokenize('not not a')) == ast.UnaryOp(
+        op='not',
+        right=ast.UnaryOp(
+            op='not',
+            right=ast.Identifier('a')
+        )
+    )
+    assert parse(tokenize('not-a')) == ast.UnaryOp(
+        op='not',
+        right=ast.UnaryOp(
+            op='-',
+            right=ast.Identifier('a')
+        )
+    )    
+
 def test_parser_expression() -> None:
-    assert parse(tokenize("if 2 or 3 and a then x + 1")) == ast.IfExpression(
+    assert parse(tokenize("if 2 or 3 and a then jee + 1")) == ast.IfExpression(
         cond=ast.BinaryOp(
             left=ast.Literal(2),
             op='or',
@@ -280,9 +304,58 @@ def test_parser_expression() -> None:
             )
         ),
         then_clause=ast.BinaryOp(
-            left=ast.Identifier('x'),
+            left=ast.Identifier('jee'),
             op='+',
             right=ast.Literal(1)
+        ),
+        else_clause=None
+    )
+    assert parse(tokenize('if not not a then (1 + 2)')) == ast.IfExpression(
+        cond=ast.UnaryOp(
+            op='not',
+            right=ast.UnaryOp(
+                op='not',
+                right=ast.Identifier('a')
+            )
+        ),
+        then_clause=ast.BinaryOp(
+            left=ast.Literal(1),
+            op='+',
+            right=ast.Literal(2)
+        ),
+        else_clause=None
+    )
+    assert parse(tokenize('1+2 = 3')) == ast.BinaryOp(
+        left=ast.BinaryOp(
+            left=ast.Literal(1),
+            op='+',
+            right=ast.Literal(2)
+        ),
+        op='=',
+        right=ast.Literal(3)
+    )
+    assert parse(tokenize('2 = 1 = 3')) == ast.BinaryOp(
+        left=ast.Literal(2),
+        op='=',
+        right=ast.BinaryOp(
+            left=ast.Literal(1),
+            op='=',
+            right=ast.Literal(3)
+        )
+    )
+    assert parse(tokenize('if 2 = 1+1 then -3')) == ast.IfExpression(
+        cond=ast.BinaryOp(
+            left=ast.Literal(2),
+            op='=',
+            right=ast.BinaryOp(
+                left=ast.Literal(1),
+                op='+',
+                right=ast.Literal(1)
+            ),
+        ),
+        then_clause=ast.UnaryOp(
+            op='-',
+            right=ast.Literal(3)
         ),
         else_clause=None
     )

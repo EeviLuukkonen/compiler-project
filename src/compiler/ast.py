@@ -14,7 +14,7 @@ class Literal(Expression):
 
 @dataclass
 class BinaryOp(Expression):
-    left: Expression
+    left: Expression | None
     op: str
     right: Expression
 
@@ -28,3 +28,8 @@ class IfExpression(Expression):
 class FunctionCall(Expression):
     call: Identifier
     args: list[Expression]
+
+@dataclass
+class UnaryOp(Expression):
+    op: str
+    right: Expression
