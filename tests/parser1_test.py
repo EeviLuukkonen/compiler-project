@@ -1,4 +1,5 @@
-from compiler.tokenizer import tokenize, Token
+import pytest
+from compiler.tokenizer import tokenize, Location
 from compiler.parser1 import parse
 from compiler import ast
 
@@ -359,3 +360,65 @@ def test_parser_expression() -> None:
         ),
         else_clause=None
     )
+
+def test_parser_block() -> None:
+    assert parse(tokenize('''
+        {
+            f(a);
+            x = y;
+            f(x)
+        }
+        ''')) == ast.Block(
+            statements=[
+                ast.FunctionCall(
+                    call=ast.Identifier('f'),
+                    args=[ast.Identifier('a')]
+                ),
+                ast.BinaryOp(
+                    left=ast.Identifier('x'),
+                    op='=',
+                    right=ast.Identifier('y')
+                ),
+                ast.FunctionCall(
+                    call=ast.Identifier('f'),
+                    args=[ast.Identifier('x')]
+                )
+            ]
+        )
+    
+    assert parse(tokenize('''
+        {
+            f(a);
+            x = y;
+            f(x);
+        }
+        ''')) == ast.Block(
+            statements=[
+                ast.FunctionCall(
+                    call=ast.Identifier('f'),
+                    args=[ast.Identifier('a')]
+                ),
+                ast.BinaryOp(
+                    left=ast.Identifier('x'),
+                    op='=',
+                    right=ast.Identifier('y')
+                ),
+                ast.FunctionCall(
+                    call=ast.Identifier('f'),
+                    args=[ast.Identifier('x')]
+                ),
+                ast.Literal(None)
+            ]
+        )
+
+    try:
+        parse(tokenize('''
+            {
+                f(a)
+                x = y;
+                f(x)
+            }
+        '''))
+        assert False
+    except Exception as e:
+        assert 'expected ";"' in str(e)

@@ -33,3 +33,7 @@ class FunctionCall(Expression):
 class UnaryOp(Expression):
     op: str
     right: Expression
+
+@dataclass
+class Block(Expression):
+    statements: list[Expression]

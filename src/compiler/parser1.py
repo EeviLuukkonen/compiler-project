@@ -37,7 +37,6 @@ def parse(tokens: list[Token]) -> ast.Expression:
         else:
             return left
 
-
     def parse_or() -> ast.Expression:
         left = parse_and()
 
@@ -142,6 +141,8 @@ def parse(tokens: list[Token]) -> ast.Expression:
             if peek().text == '(': # function call
                 return parse_arguments(identifier)
             return identifier
+        elif peek().text == '{':
+            return parse_block()
         elif peek().loc == None:
             raise Exception(f'Empty input!')
         else:
@@ -192,6 +193,26 @@ def parse(tokens: list[Token]) -> ast.Expression:
             args.append(arg)
         consume(')')
         return ast.FunctionCall(call, args)
+    
+    def parse_block() -> ast.Block:
+        consume('{')
+        statements: List[ast.Expression] = []
+
+        while peek().text != '}':
+            statement = parse_expression(parse_or())
+            statements.append(statement)
+
+            semicolon = False
+            if statements and peek().text != '}':
+                consume(';')
+                semicolon = True
+        
+        if semicolon: # last semicolon is present and result expression is none
+            statements.append(ast.Literal(None))
+
+        consume('}')
+
+        return ast.Block(statements=statements)
 
     result = parse_expression(parse_or())
 
