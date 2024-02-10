@@ -10,6 +10,9 @@ class Location:
     column: int
 
     def __eq__(self, other: Any) -> bool:
+        if other is L:
+            return True
+
         return (
             self.line == other.line
             and self.column == other.column
@@ -21,7 +24,7 @@ L = Location(line=1, column=1)
 class Token:
     text: str
     type: TokenType
-    loc: Optional[Location] = None
+    loc: Location
 
     def __eq__(self, other: Any) -> bool:
         if self.loc == L or other.loc == L:

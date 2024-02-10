@@ -1,8 +1,10 @@
 from dataclasses import dataclass
+from compiler.tokenizer import Location
 
 @dataclass
 class Expression:
     "base class for expression ast nodes"
+    loc: Location
 
 @dataclass
 class Identifier(Expression):
@@ -36,4 +38,9 @@ class UnaryOp(Expression):
 
 @dataclass
 class Block(Expression):
-    statements: list[Expression]
+    expressions: list[Expression]
+
+@dataclass
+class VariableDec(Expression):
+    variable: Identifier
+    value: Expression
