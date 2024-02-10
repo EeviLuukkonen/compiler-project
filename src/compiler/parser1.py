@@ -2,7 +2,6 @@ from typing import List
 from compiler import ast
 from compiler.tokenizer import Token
 
-
 def parse(tokens: list[Token]) -> ast.Expression:
     pos = 0
 
@@ -163,6 +162,10 @@ def parse(tokens: list[Token]) -> ast.Expression:
             return parse_parenthesized()
         elif peek().text == 'if':
             return parse_if()
+        elif peek().text in ['true', 'false']:
+            return parse_bool_literal()
+        elif peek().text == 'while':
+            return parse_while_loop()
         elif peek().type == 'int_literal':
             return parse_int_literal()
         elif peek().type == 'identifier':
@@ -198,6 +201,14 @@ def parse(tokens: list[Token]) -> ast.Expression:
         else:
             else_clause = None
         return ast.IfExpression(loc, cond, then_clause, else_clause)
+
+    def parse_while_loop() -> ast.Expression:
+        loc = peek().loc
+        consume('while')
+        cond = parse_expression(parse_or())
+        consume('do')
+        do = parse_expression(parse_or())
+        return ast.WhileLoop(loc, cond, do)
     
     def parse_parenthesized() -> ast.Expression:
         consume('(')
@@ -205,6 +216,17 @@ def parse(tokens: list[Token]) -> ast.Expression:
         consume(')')
         return expr
     
+    def parse_bool_literal() -> ast.Literal:
+        token = peek()
+        if token.text == 'true':
+            consume()
+            return ast.Literal(value=bool(True), loc=token.loc)
+        elif token.text == 'false':
+            consume()
+            return ast.Literal(value=bool(False), loc=token.loc)
+        else:
+            raise Exception(f'Expected integer literal, found "{token.text}"')
+
     def parse_int_literal() -> ast.Literal:
         token = peek()
         if token.type == 'int_literal':
@@ -249,17 +271,18 @@ def parse(tokens: list[Token]) -> ast.Expression:
             elif peek(-1).text == '}': # expression inside a block ends in a block
                 if peek().text == ';': # only consumes optional semicolon if it exists
                     consume(';')
-                pass
             else:
                 consume(';')
                 semicolon = True
+        consume('}')
+        
+        if not expressions: # empty block
+            return ast.Block(loc, None)
 
-        if semicolon:  # last semicolon is present and result expression is none
+        if semicolon:  # last semicolon inside block is present and result expression is none
             expressions.append(ast.Literal(loc, None))
 
-        consume('}')
-
-        if peek().text == ";": # optional last semicolon
+        if peek().text == ";": # optional last semicolon after block
             consume(';')
 
         return ast.Block(loc, expressions)

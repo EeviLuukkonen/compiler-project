@@ -38,9 +38,14 @@ class UnaryOp(Expression):
 
 @dataclass
 class Block(Expression):
-    expressions: list[Expression]
+    expressions: list[Expression] | None
 
 @dataclass
 class VariableDec(Expression):
     variable: Identifier
     value: Expression
+
+@dataclass
+class WhileLoop(Expression):
+    cond: Expression
+    do: Expression

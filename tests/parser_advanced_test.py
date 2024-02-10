@@ -207,7 +207,7 @@ def test_parser_block() -> None:
     assert parse(tokenize('{ if true then { a } b; c }')) == ast.Block(
         expressions=[
             ast.IfExpression(
-                cond=ast.Identifier(L, 'true'),
+                cond=ast.Literal(L, True),
                 then_clause=ast.Block(
                     expressions=[ast.Identifier(L, 'a')],
                     loc=L
@@ -229,7 +229,7 @@ def test_parser_block() -> None:
     assert parse(tokenize('{ if true then { a } else { b } 3 }')) == ast.Block(
         expressions=[
             ast.IfExpression(
-                cond=ast.Identifier(L, 'true'),
+                cond=ast.Literal(L, True),
                 then_clause=ast.Block(
                     expressions=[ast.Identifier(L, 'a')],
                     loc=L
@@ -262,6 +262,12 @@ def test_parser_block() -> None:
             loc=L
         ),
         loc=L
+    )
+
+def test_bool_literal() -> None:
+    assert parse(tokenize('true')) == ast.Literal(
+        loc=L,
+        value=True
     )
 
 def test_parser_variable_dec() -> None:
@@ -322,12 +328,17 @@ def test_parser_variable_dec() -> None:
         ],
         loc=L
     )
+    assert parse(tokenize('var x = {}')) == ast.VariableDec(
+        loc=L,
+        variable=ast.Identifier(L, 'x'),
+        value=ast.Block(loc=L, expressions=None)
+    )
 
 def test_parser_location() -> None:
     assert parse(tokenize('{ if true then { a } else { b } 3 }')) == ast.Block(
         expressions=[
             ast.IfExpression(
-                cond=ast.Identifier(Location(line=1, column=6), 'true'),
+                cond=ast.Literal(Location(line=1, column=6), True),
                 then_clause=ast.Block(
                     expressions=[ast.Identifier(Location(line=1, column=18), 'a')],
                     loc=Location(line=1, column=16)
@@ -362,4 +373,11 @@ def test_parser_location() -> None:
             ),
         ],
         loc=Location(line=2, column=9)
+    )
+
+def test_parser_while() -> None:
+    assert parse(tokenize("while true do 2")) == ast.WhileLoop(
+        cond=ast.Literal(L, True),
+        do=ast.Literal(L, 2),
+        loc=L
     )
