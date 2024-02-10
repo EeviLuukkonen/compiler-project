@@ -1,4 +1,6 @@
 import sys
+from compiler.tokenizer import tokenize
+from compiler.parser1 import parse
 
 # TODO(student): add more commands as needed
 usage = f"""
@@ -39,9 +41,13 @@ def main() -> int:
         print(f"Error: command argument missing\n\n{usage}", file=sys.stderr)
         return 1
 
+    source_code = read_source_code()
     if command == 'interpret':
-        source_code = read_source_code()
         ...  # TODO(student)
+    elif command == 'tokenize':
+        return tokenize(source_code)
+    elif command == 'parse':
+        return parse(tokenize(source_code))
     else:
         print(f"Error: unknown command: {command}\n\n{usage}", file=sys.stderr)
         return 1

@@ -85,6 +85,23 @@ def test_parser_expression() -> None:
         else_clause=None,
         loc=L
     )
+    assert parse(tokenize('''
+        1+2 = 3;
+        true
+    ''')) == [
+        ast.BinaryOp(
+            left=ast.BinaryOp(
+                left=ast.Literal(L, 1),
+                op='+',
+                right=ast.Literal(L, 2),
+                loc=L
+            ),
+            op='=',
+            right=ast.Literal(L, 3),
+            loc=L
+        ),
+        ast.Literal(L, True)
+    ]
 
 def test_parser_block() -> None:
     assert parse(tokenize('''

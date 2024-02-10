@@ -96,16 +96,17 @@ def test_parser_error() -> None:
         parse(tokenize("a - 2 * 3 b"))
         assert False
     except Exception as e:
-        assert "Unknown syntax at the end of the code:" in str(e)
+        assert "Expected ; between expressions" in str(e)
 
     try:
         parse(tokenize("a b -"))
         assert False
     except Exception as e:
-        assert "Unknown syntax at the end of the code:" in str(e)
+        assert "Expected ; between expressions" in str(e)
 
     try:
-        parse(tokenize(""))
+        a = parse(tokenize(""))
+        print(a)
         assert False
     except Exception as e:
         assert "Empty input!" in str(e)

@@ -2,12 +2,10 @@ from typing import List
 from compiler import ast
 from compiler.tokenizer import Token
 
-def parse(tokens: list[Token]) -> ast.Expression:
+def parse(tokens: list[Token]) -> ast.Expression | list[ast.Expression]:
     pos = 0
 
     def peek(offset: int = 0) -> Token:
-        if len(tokens) == 0:
-            raise Exception('Empty input!')
         index = offset + pos
         if 0 <= index < len(tokens):
             return tokens[index]
@@ -287,9 +285,19 @@ def parse(tokens: list[Token]) -> ast.Expression:
 
         return ast.Block(loc, expressions)
 
-    result = parse_expression(parse_or())
+    result: List[ast.Expression] = []
 
-    if pos == len(tokens):
-        return result
-    else:
-        raise Exception(f'Unknown syntax at the end of the code: {tokens[pos].loc}')
+    while pos < len(tokens):
+        expression = parse_expression(parse_or())
+        result.append(expression)
+
+        if peek().text == ';':
+            consume(';')
+        elif pos < len(tokens):
+            raise Exception(f'{peek().loc}: Expected ; between expressions, got {peek().text}')
+
+    if len(result) == 1:
+        return result[0]
+    elif len(result) == 0:
+        raise Exception('Empty input!')
+    return result
