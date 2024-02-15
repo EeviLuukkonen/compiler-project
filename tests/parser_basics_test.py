@@ -1,5 +1,5 @@
 from compiler.tokenizer import tokenize, L
-from compiler.parser1 import parse
+from compiler.parser import parse
 from compiler import ast
 
 def test_parser_basics() -> None:
@@ -88,6 +88,17 @@ def test_parser_basics() -> None:
         ),
         op="*",
         right = ast.Literal(L, 3),
+        loc=L
+    )
+    assert parse(tokenize('1 + (2 < 3)')) == ast.BinaryOp(
+        left=ast.Literal(L, 1),
+        op="+",
+        right = ast.BinaryOp(
+            left=ast.Literal(L, 2),
+            op="<",
+            right=ast.Literal(L, 3),
+            loc=L
+        ),
         loc=L
     )
 

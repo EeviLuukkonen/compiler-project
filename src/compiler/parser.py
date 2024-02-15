@@ -210,7 +210,7 @@ def parse(tokens: list[Token]) -> ast.Expression | list[ast.Expression]:
     
     def parse_parenthesized() -> ast.Expression:
         consume('(')
-        expr = parse_polynomial()
+        expr = parse_comparison()
         consume(')')
         return expr
     

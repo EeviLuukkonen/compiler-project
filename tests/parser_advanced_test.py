@@ -1,5 +1,5 @@
 from compiler.tokenizer import tokenize, L, Location
-from compiler.parser1 import parse
+from compiler.parser import parse
 from compiler import ast
 
 def test_parser_expression() -> None:
