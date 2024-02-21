@@ -88,7 +88,7 @@ def test_parser_expression() -> None:
     assert parse(tokenize('''
         1+2 = 3;
         true
-    ''')) == [
+    ''')) == ast.Block(L, [
         ast.BinaryOp(
             left=ast.BinaryOp(
                 left=ast.Literal(L, 1),
@@ -101,7 +101,7 @@ def test_parser_expression() -> None:
             loc=L
         ),
         ast.Literal(L, True)
-    ]
+    ])
 
 def test_parser_block() -> None:
     assert parse(tokenize('''

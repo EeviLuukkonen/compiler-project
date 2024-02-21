@@ -7,6 +7,19 @@ class Expression:
     loc: Location
 
 @dataclass
+class TypeExpr(Expression):
+    "base class for expression types"
+
+@dataclass(frozen=True)
+class BasicTypeExpr(TypeExpr):
+    name: str
+
+@dataclass(frozen=True)
+class FunTypeExpr(TypeExpr):
+    parameters: list[TypeExpr]
+    return_type: TypeExpr
+
+@dataclass
 class Identifier(Expression):
     name: str
 
@@ -44,8 +57,13 @@ class Block(Expression):
 class VariableDec(Expression):
     variable: Identifier
     value: Expression
+    type: TypeExpr | None
 
 @dataclass
 class WhileLoop(Expression):
     cond: Expression
     do: Expression
+
+Int = BasicTypeExpr('Int')
+Bool = BasicTypeExpr('Bool')
+Unit = BasicTypeExpr('Unit')

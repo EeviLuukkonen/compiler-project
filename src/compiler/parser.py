@@ -1,8 +1,8 @@
 from typing import List
 from compiler import ast
-from compiler.tokenizer import Token
+from compiler.tokenizer import Location, Token
 
-def parse(tokens: list[Token]) -> ast.Expression | list[ast.Expression]:
+def parse(tokens: list[Token]) -> ast.Expression:
     pos = 0
 
     def peek(offset: int = 0) -> Token:
@@ -285,19 +285,19 @@ def parse(tokens: list[Token]) -> ast.Expression | list[ast.Expression]:
 
         return ast.Block(loc, expressions)
 
-    result: List[ast.Expression] = []
+    expressions: List[ast.Expression] = []
 
     while pos < len(tokens):
         expression = parse_expression(parse_or())
-        result.append(expression)
+        expressions.append(expression)
 
         if peek().text == ';':
             consume(';')
         elif pos < len(tokens):
             raise Exception(f'{peek().loc}: Expected ; between expressions, got {peek().text}')
 
-    if len(result) == 1:
-        return result[0]
-    elif len(result) == 0:
+    if len(expressions) == 1:
+        return expressions[0]
+    elif len(expressions) == 0:
         raise Exception('Empty input!')
-    return result
+    return ast.Block(Location(line=1, column=1), expressions)

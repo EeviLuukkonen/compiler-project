@@ -4,28 +4,25 @@ from compiler import ast
 
 def test_parser_basics() -> None:
     assert parse(tokenize("1")) == ast.Literal(L, 1)
-
+    assert parse(tokenize('true')) == ast.Literal(L, True)
     assert parse(tokenize("1 + 2")) == ast.BinaryOp(
         left=ast.Literal(L, 1),
         op="+",
         right = ast.Literal(L, 2),
         loc=L
     )
-
     assert parse(tokenize("a + 2")) == ast.BinaryOp(
         left=ast.Identifier(L, "a"),
         op="+",
         right = ast.Literal(L, 2),
         loc=L
     )
-
     assert parse(tokenize("a * 2")) == ast.BinaryOp(
         left=ast.Identifier(L, "a"),
         op="*",
         right = ast.Literal(L, 2),
         loc=L
     )
-
     assert parse(tokenize("a - 2 + 3")) == ast.BinaryOp(
         left=ast.BinaryOp(
             left=ast.Identifier(L, "a"),
@@ -37,7 +34,6 @@ def test_parser_basics() -> None:
         right = ast.Literal(L, 3),
         loc=L
     )
-
     assert parse(tokenize("a - 2 * 3")) == ast.BinaryOp(
         left=ast.Identifier(L, "a"),
         op="-",
@@ -49,7 +45,6 @@ def test_parser_basics() -> None:
         ),
         loc=L
     )
-
     assert parse(tokenize("1*a - 2 * 3")) == ast.BinaryOp(
         left=ast.BinaryOp(
             left=ast.Literal(L, 1),
@@ -66,7 +61,6 @@ def test_parser_basics() -> None:
         ),
         loc=L
     )
-
     assert parse(tokenize("a - 2 % 3")) == ast.BinaryOp(
         left=ast.Identifier(L, "a"),
         op="-",
@@ -78,7 +72,6 @@ def test_parser_basics() -> None:
         ),
         loc=L
     )
-
     assert parse(tokenize("(a - 2) * 3")) == ast.BinaryOp(
         left=ast.BinaryOp(
             left=ast.Identifier(L, "a"),

@@ -1,5 +1,5 @@
 import re
-from typing import Literal, cast, Any, Optional
+from typing import Literal, cast, Any
 from dataclasses import dataclass
 
 TokenType = Literal['int_literal', 'identifier', 'operator', 'punctuation', 'end']
