@@ -291,14 +291,16 @@ def test_parser_variable_dec() -> None:
     assert parse(tokenize('var x = 123')) == ast.VariableDec(
         variable=ast.Identifier(L, 'x'),
         value=ast.Literal(L, 123),
-        loc=L
+        loc=L,
+        var_type=None
     )
     assert parse(tokenize('{var x = 123};')) == ast.Block(
         expressions=[
             ast.VariableDec(
                 variable=ast.Identifier(L, 'x'),
                 value=ast.Literal(L, 123),
-                loc=L
+                loc=L,
+                var_type=None
             )
         ],
         loc=L
@@ -313,7 +315,8 @@ def test_parser_variable_dec() -> None:
             ast.VariableDec(
                 variable=ast.Identifier(L, 'x'),
                 value=ast.Literal(L, 123),
-                loc=L
+                loc=L,
+                var_type=None
             ),
             ast.BinaryOp(
                 left=ast.Identifier(L, 'x'),
@@ -340,7 +343,8 @@ def test_parser_variable_dec() -> None:
             ast.VariableDec(
                 variable=ast.Identifier(L, 'x'),
                 value=ast.Literal(L, 123),
-                loc=L
+                loc=L,
+                var_type=None
             ),
         ],
         loc=L
@@ -348,7 +352,26 @@ def test_parser_variable_dec() -> None:
     assert parse(tokenize('var x = {}')) == ast.VariableDec(
         loc=L,
         variable=ast.Identifier(L, 'x'),
-        value=ast.Block(loc=L, expressions=None)
+        value=ast.Block(loc=L, expressions=None),
+        var_type=None
+    )
+    assert parse(tokenize('var x: Int = 2')) == ast.VariableDec(
+        loc=L,
+        variable=ast.Identifier(L, 'x'),
+        value=ast.Literal(L, 2),
+        var_type=ast.Int
+    )
+    assert parse(tokenize('var x: I = 2')) == ast.VariableDec(
+        loc=L,
+        variable=ast.Identifier(L, 'x'),
+        value=ast.Literal(L, 2),
+        var_type=ast.BasicTypeExpr('I')
+    )
+    assert parse(tokenize('var x: (Int, Bool) => Bool = 2')) == ast.VariableDec(
+        loc=L,
+        variable=ast.Identifier(L, 'x'),
+        value=ast.Literal(L, 2),
+        var_type=ast.FunTypeExpr([ast.Int, ast.Bool], ast.Bool)
     )
 
 def test_parser_location() -> None:
@@ -386,7 +409,8 @@ def test_parser_location() -> None:
             ast.VariableDec(
                 variable=ast.Identifier(Location(line=4, column=17), 'x'),
                 value=ast.Literal(Location(line=4, column=21), 123),
-                loc=Location(line=4, column=13)
+                loc=Location(line=4, column=13),
+                var_type=None
             ),
         ],
         loc=Location(line=2, column=9)

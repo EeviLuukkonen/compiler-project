@@ -2,7 +2,7 @@ from typing import Any
 from compiler.parser import parse
 from compiler.tokenizer import tokenize
 from compiler.type_checker import typecheck
-from compiler.types import Int, Bool, SymTab, Unit, top_level_symtab
+from compiler.types import Int, Bool, PrintInt, SymTab, Unit, top_level_symtab
 
 def test_type_checker() -> None:
     assert typecheck_helper('1+2') == Int
@@ -25,6 +25,9 @@ def test_type_checker() -> None:
     assert typecheck_helper('print_int(2)') == Unit
     assert typecheck_helper('print_bool(true)') == Unit
     assert typecheck_helper('1 + while true do 3 + 2') == Int
+    assert typecheck_helper('var x: Int = 2 + 1') == Unit
+    assert typecheck_helper('var x: Int = 2 + 1; x') == Int
+    assert typecheck_helper('var x: (Int) => Unit = print_int') == Unit    
 
     assert_fails_typecheck('(1<2) +3')
     assert_fails_typecheck('if 1 then 3 else 4')
@@ -36,6 +39,9 @@ def test_type_checker() -> None:
     assert_fails_typecheck('print_int(x, y)')
     assert_fails_typecheck('x')
     assert_fails_typecheck('print_bool(1)')
+    assert_fails_typecheck('while 1 do 3 + 2')
+    assert_fails_typecheck('var x: Int = true')
+    assert_fails_typecheck('var x: (Int) => Int = print_int')
 
 def typecheck_helper(code: str) -> Any:
     expr = parse(tokenize(code))

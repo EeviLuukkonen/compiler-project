@@ -36,15 +36,14 @@ class Token:
             and self.loc == other.loc
         )
 
-
 def tokenize(source_code: str) -> list[Token]:
     token_re = [
         ('newline', re.compile('\n+')), # newline for token line and column
         ( None, re.compile(r'(//|#)[^\n]*|[^\S\n]+')), # comments, whitespaces as None
         ('identifier', re.compile(r'[a-zA-Z_][a-zA-Z0-9_]*')),
         ('int_literal', re.compile(r'[0-9]+')),
-        ('operator', re.compile(r'==|!=|>=|<=|\+|\-|\*|/|=|<|>|%')),
-        ('punctuation', re.compile(r'\(|\)|{|}|\,|;')),
+        ('operator', re.compile(r'==|!=|>=|<=|=>|\+|\-|\*|/|=|<|>|%')),
+        ('punctuation', re.compile(r'\(|\)|{|}|\,|;|:')),
     ]
 
     position = 0

@@ -2,15 +2,15 @@
 from dataclasses import dataclass
 from typing import Dict, Optional
 
-@dataclass(frozen=True)
+@dataclass
 class Type:
     '''Base class for types'''
 
-@dataclass(frozen=True)
+@dataclass
 class BasicType(Type):
     name: str
 
-@dataclass(frozen=True)
+@dataclass
 class FunType(Type):
     parameters: list[Type]
     return_type: Type

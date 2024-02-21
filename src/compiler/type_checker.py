@@ -1,8 +1,25 @@
 from compiler import ast
-from compiler.types import Bool, Int, SymTab, FunType, Type, Unit
+from compiler.types import BasicType, Bool, Int, PrintInt, SymTab, FunType, Type, Unit
 
 
 def typecheck(node: ast.Expression | None, symtab: SymTab) -> Type:
+
+    def match_var_types(t_expected: ast.TypeExpr, t_actual: Type) -> bool:
+        if isinstance(t_expected, ast.BasicTypeExpr) and isinstance(t_actual, BasicType):
+            return t_expected.name == t_actual.name
+        elif isinstance(t_expected, ast.FunTypeExpr) and isinstance(t_actual, FunType):
+            print("täs")
+            if len(t_expected.parameters) != len(t_actual.parameters):
+                return False
+            print(t_expected.parameters, t_actual.parameters)
+            for param_expr, param_type in zip(t_expected.parameters, t_actual.parameters):
+                if not match_var_types(param_expr, param_type):
+                    return False
+
+            return match_var_types(t_expected.return_type, t_actual.return_type)
+        print(t_expected, t_actual)
+        return False
+
     match node:
         case ast.Literal():
             if isinstance(node.value, bool):
@@ -28,8 +45,6 @@ def typecheck(node: ast.Expression | None, symtab: SymTab) -> Type:
         
         case ast.Identifier():
             t = symtab.get_type(node.name)
-            if t not in [Int, Bool]:
-                raise Exception(f"Unknown variable type {t}")
             return t
             
         case ast.IfExpression():
@@ -47,6 +62,11 @@ def typecheck(node: ast.Expression | None, symtab: SymTab) -> Type:
         case ast.VariableDec():
             name = node.variable.name
             t = typecheck(node.value, symtab)
+
+            if node.var_type:
+                if not match_var_types(node.var_type, t):
+                    raise TypeError(f'Variable {name} expected type {node.var_type}, got {t}')
+
             symtab.set_type(str(name), t)
             return Unit
 
@@ -88,3 +108,4 @@ def typecheck(node: ast.Expression | None, symtab: SymTab) -> Type:
 
         case _:
             raise Exception(f"Unsupported AST node {node}")
+        

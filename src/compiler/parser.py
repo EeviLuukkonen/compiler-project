@@ -15,7 +15,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
     def consume(expected: str | list[str] | None = None) -> Token:
         token = peek()
         if isinstance(expected, str) and token.text != expected:
-            raise Exception(f'{token.loc}: expected "{expected}"')
+            raise Exception(f'{token.loc}: expected "{expected}", got "{token.text}"')
         if isinstance(expected, list) and token.text not in expected:
             comma_separated = ", ".join([f'"{e}"' for e in expected])
             raise Exception(f'{token.loc}: expected one of: {comma_separated}')
@@ -181,11 +181,40 @@ def parse(tokens: list[Token]) -> ast.Expression:
         if peek().loc.column == 1 or peek(-1).text in ['{', ';']:
             consume('var')
             identifier = parse_identifier()
+            var_type = None
+
+            if peek().text == ":":
+                consume(':')
+                var_type = parse_type_expression()
+
             consume('=')
             value = parse_expression(parse_or())
-            return ast.VariableDec(loc, identifier, value)
+            return ast.VariableDec(loc, identifier, value, var_type)
         else:
             raise Exception("Variable declaration should only appear as a top level expression!")
+
+    def parse_type_expression() -> ast.TypeExpr:
+        if peek().text == '(':
+            return parse_func_type_expression()
+        else:
+            token = consume()
+            return ast.BasicTypeExpr(token.text)
+        
+
+    def parse_func_type_expression() -> ast.FunTypeExpr:
+        consume('(')
+        parameters: list[ast.TypeExpr] = []
+        while True:
+            parameters.append(parse_type_expression())
+            if peek().text == ',':
+                consume(',')
+            else:
+                break
+        consume(')')
+        consume('=>')
+        return_type = parse_type_expression()
+
+        return ast.FunTypeExpr(parameters, return_type)
 
     def parse_if() -> ast.Expression:
         loc = peek().loc
