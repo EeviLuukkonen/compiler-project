@@ -1,6 +1,10 @@
 import sys
+from compiler.interpreter import interpret
+from compiler.ir_generator import generate_ir
 from compiler.tokenizer import tokenize
 from compiler.parser import parse
+from compiler.type_checker import typecheck
+from compiler.types import SymTab, top_level_symtab
 
 # TODO(student): add more commands as needed
 usage = f"""
@@ -17,6 +21,7 @@ Common arguments:
 def main() -> int:
     command: str | None = None
     input_file: str | None = None
+    symtab = SymTab(locals=dict(top_level_symtab))
     for arg in sys.argv[1:]:
         if arg in ['-h', '--help']:
             print(usage)
@@ -43,11 +48,17 @@ def main() -> int:
 
     source_code = read_source_code()
     if command == 'interpret':
-        ...  # TODO(student)
-    #elif command == 'tokenize':
-    #    return tokenize(source_code)
-    #elif command == 'parse':
-    #    return parse(tokenize(source_code))
+        print(interpret(parse(tokenize(source_code))))
+    elif command == 'tokenize':
+        return tokenize(source_code)
+    elif command == 'parse':
+        return parse(tokenize(source_code))
+    elif command == 'ir':
+        tokens = tokenize(source_code)
+        ast_node = parse(tokens)
+        typecheck(ast_node, symtab)
+        ir_instructions = generate_ir(ast_node)
+        print("\n".join([str(ins) for ins in ir_instructions]))
     else:
         print(f"Error: unknown command: {command}\n\n{usage}", file=sys.stderr)
         return 1
