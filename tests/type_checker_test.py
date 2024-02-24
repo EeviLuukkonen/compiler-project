@@ -27,7 +27,9 @@ def test_type_checker() -> None:
     assert typecheck_helper('1 + while true do 3 + 2') == Int
     assert typecheck_helper('var x: Int = 2 + 1') == Unit
     assert typecheck_helper('var x: Int = 2 + 1; x') == Int
-    assert typecheck_helper('var x: (Int) => Unit = print_int') == Unit    
+    assert typecheck_helper('var x: (Int) => Unit = print_int') == Unit
+    assert typecheck_helper('{}') == Unit
+
 
     assert_fails_typecheck('(1<2) +3')
     assert_fails_typecheck('if 1 then 3 else 4')

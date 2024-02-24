@@ -1,10 +1,12 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from compiler.tokenizer import Location
+from compiler import types
 
 @dataclass
 class Expression:
     "base class for expression ast nodes"
     loc: Location
+    type: types.Type = field(kw_only=True, default_factory=lambda: types.Unit)
 
 @dataclass
 class TypeExpr:
@@ -20,7 +22,7 @@ class Literal(Expression):
 
 @dataclass
 class BinaryOp(Expression):
-    left: Expression | None
+    left: Expression
     op: str
     right: Expression
 
