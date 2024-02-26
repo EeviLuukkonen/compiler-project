@@ -1,5 +1,6 @@
 from compiler import ast
-from compiler.types import BasicType, Bool, Int, SymTab, FunType, Type, Unit
+from compiler.symtab import SymTab
+from compiler.types import BasicType, Bool, Int, FunType, Type, Unit
 
 def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
     def typecheck_expr(node: ast.Expression, symtab: SymTab) -> Type:
@@ -19,7 +20,7 @@ def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
                     if t1 != t2:
                         raise TypeError(f'Operator {node.op} expected same type on each side, got {t1} and {t2}')
                     return t1
-                op_type = symtab.get_type(node.op)
+                op_type = symtab.get_symbol(node.op)
                 if isinstance(op_type, FunType):
                     if op_type.parameters != [t1, t2]:
                         raise TypeError(f'Operator {node.op} expected {op_type.parameters}, got {t1} and {t2}')
@@ -27,7 +28,7 @@ def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
                 raise Exception(f'Unknown operator: {node.op}')
             
             case ast.Identifier():
-                t = symtab.get_type(node.name)
+                t = symtab.get_symbol(node.name)
                 return t
                 
             case ast.IfExpression():
@@ -48,7 +49,7 @@ def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
                 if node.var_type:
                     if not match_var_types(node.var_type, t):
                         raise TypeError(f'Variable {name} expected type {node.var_type}, got {t}')
-                symtab.set_type(str(name), t)
+                symtab.set_local(str(name), t)
                 return Unit
 
             case ast.Block():
@@ -60,14 +61,14 @@ def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
                 return Unit
             
             case ast.UnaryOp():
-                op_type = symtab.get_type(f'unary_{node.op}')
+                op_type = symtab.get_symbol(f'unary_{node.op}')
                 t = typecheck(node.right, symtab)
                 if op_type != t:
                     raise TypeError(f'Operator "unary_{node.op}" right side expected {op_type}, got {t}')
                 return t
             
             case ast.FunctionCall():
-                fun_type = symtab.get_type(node.call.name)
+                fun_type = symtab.get_symbol(node.call.name)
                 args = node.args
                 if isinstance(fun_type, FunType):
                     if len(args) != len(fun_type.parameters):        

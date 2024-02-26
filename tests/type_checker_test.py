@@ -1,8 +1,9 @@
 from typing import Any
 from compiler.parser import parse
+from compiler.symtab import SymTab, top_level_symtab
 from compiler.tokenizer import tokenize
 from compiler.type_checker import typecheck
-from compiler.types import Int, Bool, PrintInt, SymTab, Unit, top_level_symtab
+from compiler.types import Int, Bool, Unit
 
 def test_type_checker() -> None:
     assert typecheck_helper('1+2') == Int

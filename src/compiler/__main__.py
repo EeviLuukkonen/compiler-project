@@ -1,10 +1,10 @@
 import sys
 from compiler.interpreter import interpret
 from compiler.ir_generator import generate_ir
+from compiler.symtab import SymTab, top_level_symtab, root_types
 from compiler.tokenizer import tokenize
 from compiler.parser import parse
 from compiler.type_checker import typecheck
-from compiler.types import SymTab, top_level_symtab
 
 # TODO(student): add more commands as needed
 usage = f"""
@@ -50,20 +50,22 @@ def main() -> int:
     if command == 'interpret':
         print(interpret(parse(tokenize(source_code))))
     elif command == 'tokenize':
-        return tokenize(source_code)
+        print(tokenize(source_code))
     elif command == 'parse':
-        return parse(tokenize(source_code))
+        print(parse(tokenize(source_code)))
+    elif command == "typecheck":
+        print(typecheck(parse(tokenize(source_code)), symtab))
     elif command == 'ir':
         tokens = tokenize(source_code)
         ast_node = parse(tokens)
         typecheck(ast_node, symtab)
-        ir_instructions = generate_ir(ast_node)
+        ir_instructions = generate_ir(root_types, ast_node)
+        print(ir_instructions)
         print("\n".join([str(ins) for ins in ir_instructions]))
     else:
         print(f"Error: unknown command: {command}\n\n{usage}", file=sys.stderr)
         return 1
     return 0
-
 
 if __name__ == '__main__':
     sys.exit(main())

@@ -1,5 +1,9 @@
 
 from dataclasses import dataclass
+import dataclasses
+from typing import Any
+
+from compiler.tokenizer import Location
 
 @dataclass(frozen=True)
 class IRVar:
@@ -11,11 +15,30 @@ class IRVar:
 @dataclass(frozen=True)
 class Instruction():
     """Base class for IR instructions"""
+    location: Location
+
+    def __str__(self) -> str:
+        def format_value(v: Any) -> str:
+            if isinstance(v, list):
+                return f'[{", ".join(format_value(e) for e in v)}]'
+            else:
+                return str(v)
+        args = ', '.join(
+            format_value(getattr(self, field.name))
+            for field in dataclasses.fields(self)
+            if field.name != 'location'
+        )
+        return f'{type(self).__name__}({args})'
 
 @dataclass(frozen=True)
 class Call(Instruction):
     fun: IRVar
     args: list[IRVar]
+    dest: IRVar
+
+@dataclass(frozen=True)
+class LoadBoolConst(Instruction):
+    value: bool
     dest: IRVar
 
 @dataclass(frozen=True)
@@ -27,3 +50,17 @@ class LoadIntConst(Instruction):
 class Copy(Instruction):
     source: IRVar
     dest: IRVar
+
+@dataclass(frozen=True)
+class Label(Instruction):
+    name: str
+
+@dataclass(frozen=True)
+class Jump(Instruction):
+    label: Label
+
+@dataclass(frozen=True)
+class CondJump(Instruction):
+    cond: IRVar
+    then_label: Label
+    else_label: Label

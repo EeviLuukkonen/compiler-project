@@ -61,6 +61,9 @@ class WhileLoop(Expression):
 class BasicTypeExpr(TypeExpr):
     name: str
 
+    def __repr__(self) -> str:
+        return self.name
+
 @dataclass
 class FunTypeExpr(TypeExpr):
     parameters: list[TypeExpr]
