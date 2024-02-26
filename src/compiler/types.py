@@ -1,4 +1,5 @@
 
+from compiler import ast
 from dataclasses import dataclass
 
 @dataclass
@@ -11,11 +12,29 @@ class BasicType(Type):
 
     def __repr__(self) -> str:
         return self.name
+    
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, BasicType) and self.name == other.name
+        ) or (
+            isinstance(other, ast.BasicTypeExpr) and self.name == other.name
+        )
 
 @dataclass
 class FunType(Type):
     parameters: list[Type]
     return_type: Type
+
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, FunType)
+            and self.parameters == other.parameters
+            and self.return_type == other.return_type
+        ) or (
+            isinstance(other, ast.FunTypeExpr)
+            and self.parameters == other.parameters
+            and self.return_type == other.return_type
+        )
 
 Int = BasicType('Int')
 Bool = BasicType('Bool')

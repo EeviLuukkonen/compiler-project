@@ -63,11 +63,29 @@ class BasicTypeExpr(TypeExpr):
 
     def __repr__(self) -> str:
         return self.name
+    
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, BasicTypeExpr) and self.name == other.name
+        ) or (
+            isinstance(other, types.BasicType) and self.name == other.name
+        )
 
 @dataclass
 class FunTypeExpr(TypeExpr):
     parameters: list[TypeExpr]
     return_type: TypeExpr
+
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, FunTypeExpr)
+            and self.parameters == other.parameters
+            and self.return_type == other.return_type
+        ) or (
+            isinstance(other, types.FunType)
+            and self.parameters == other.parameters
+            and self.return_type == other.return_type
+        )
 
 Int = BasicTypeExpr('Int')
 Bool = BasicTypeExpr('Bool')

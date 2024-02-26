@@ -200,7 +200,6 @@ def parse(tokens: list[Token]) -> ast.Expression:
             token = consume()
             return ast.BasicTypeExpr(token.text)
         
-
     def parse_func_type_expression() -> ast.FunTypeExpr:
         consume('(')
         parameters: list[ast.TypeExpr] = []

@@ -47,7 +47,7 @@ def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
                 name = node.variable.name
                 t = typecheck(node.value, symtab)
                 if node.var_type:
-                    if not match_var_types(node.var_type, t):
+                    if not node.var_type == t:
                         raise TypeError(f'Variable {name} expected type {node.var_type}, got {t}')
                 symtab.set_local(str(name), t)
                 return Unit
@@ -89,18 +89,6 @@ def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
 
             case _:
                 raise Exception(f"Unsupported AST node {node}")
-            
-    def match_var_types(t_expected: ast.TypeExpr, t_actual: Type) -> bool:
-        if isinstance(t_expected, ast.BasicTypeExpr) and isinstance(t_actual, BasicType):
-            return t_expected.name == t_actual.name
-        elif isinstance(t_expected, ast.FunTypeExpr) and isinstance(t_actual, FunType):
-            if len(t_expected.parameters) != len(t_actual.parameters):
-                return False
-            for param_expr, param_type in zip(t_expected.parameters, t_actual.parameters):
-                if not match_var_types(param_expr, param_type):
-                    return False
-            return match_var_types(t_expected.return_type, t_actual.return_type)
-        return False
         
     result_type = typecheck_expr(node, symtab)
     node.type = result_type

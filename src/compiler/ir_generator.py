@@ -17,7 +17,6 @@ def generate_ir(root_types: dict[IRVar, Type], root_node: ast.Expression) -> lis
         nonlocal next_var_number
         var = IRVar(f'x{next_var_number}')
         var_types[var] = t
-        print(var_types)
         next_var_number += 1
         return var
     
@@ -30,6 +29,7 @@ def generate_ir(root_types: dict[IRVar, Type], root_node: ast.Expression) -> lis
     instructions: list[ir.Instruction] = []
 
     def visit(st: SymTab[IRVar], node: ast.Expression) -> IRVar:
+        print(node.type)
         loc = node.loc
         match node:
             case ast.Literal():
@@ -51,13 +51,15 @@ def generate_ir(root_types: dict[IRVar, Type], root_node: ast.Expression) -> lis
                 return var
             
             case ast.Identifier():
-                return st.get_symbol(node.name)
+                s = st.get_symbol(node.name)
+                print(s)
+                return s
 
             case ast.BinaryOp():
                 var_op = st.get_symbol(node.op)
                 var_left = visit(st, node.left)
                 var_right = visit(st, node.right)
-                var_result = new_var(node.type) #TODO KORJAA!
+                var_result = new_var(node.type)
                 instructions.append(ir.Call(
                     location=loc,
                     fun=var_op,
@@ -97,6 +99,24 @@ def generate_ir(root_types: dict[IRVar, Type], root_node: ast.Expression) -> lis
 
                     instructions.append(l_end)
                     return var_result
+                
+            case ast.VariableDec():
+                var_value = visit(st, node.value)
+                var_result = new_var(var_types[var_value])
+
+                st.set_local(node.variable.name, var_result)
+
+                instructions.append(ir.Copy(loc, var_value, var_result))
+                return var_result
+            
+            case ast.Block():
+                block_st = st.create_inner_tab()
+                if node.expressions is not None:
+                    for e in node.expressions:
+                        var_result = visit(block_st, e)
+                    return var_result
+                return var_unit
+
             case _:
                 raise Exception(f"Unsupported AST node: {node}")
     
@@ -105,6 +125,8 @@ def generate_ir(root_types: dict[IRVar, Type], root_node: ast.Expression) -> lis
         root_symtab.set_local(v.name, v)
 
     var_result = visit(root_symtab, root_node)
+    print(var_result)
+    print(var_types)
 
     if var_types[var_result] == Int:
         instructions.append(ir.Call(

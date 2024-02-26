@@ -60,7 +60,6 @@ def main() -> int:
         ast_node = parse(tokens)
         typecheck(ast_node, symtab)
         ir_instructions = generate_ir(root_types, ast_node)
-        print(ir_instructions)
         print("\n".join([str(ins) for ins in ir_instructions]))
     else:
         print(f"Error: unknown command: {command}\n\n{usage}", file=sys.stderr)
