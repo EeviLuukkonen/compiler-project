@@ -2,7 +2,7 @@ from compiler import ast, ir
 from compiler.ir import IRVar
 from compiler.symtab import SymTab
 from compiler.tokenizer import Location
-from compiler.types import Bool, Int, Type, Unit
+from compiler.types import Bool, EqType, Int, Type, Unit
 
 def generate_ir(root_types: dict[IRVar, Type], root_node: ast.Expression) -> list[ir.Instruction]:
     var_types: dict[IRVar, Type] = root_types.copy()
@@ -29,7 +29,6 @@ def generate_ir(root_types: dict[IRVar, Type], root_node: ast.Expression) -> lis
     instructions: list[ir.Instruction] = []
 
     def visit(st: SymTab[IRVar], node: ast.Expression) -> IRVar:
-        print(node.type)
         loc = node.loc
         match node:
             case ast.Literal():
@@ -51,9 +50,18 @@ def generate_ir(root_types: dict[IRVar, Type], root_node: ast.Expression) -> lis
                 return var
             
             case ast.Identifier():
-                s = st.get_symbol(node.name)
-                print(s)
-                return s
+                return st.get_symbol(node.name)
+
+            case ast.BinaryOp(op='='):
+                if not isinstance(node.left, ast.Identifier):
+                    raise Exception(f"{loc}: Left side of assignment must be a variable name")
+
+                var_right = visit(st, node.right)
+                var_left = visit(st, node.left)
+                instructions.append(ir.Copy(
+                    loc, var_right, var_left
+                ))
+                return var_unit
 
             case ast.BinaryOp():
                 var_op = st.get_symbol(node.op)
@@ -116,6 +124,41 @@ def generate_ir(root_types: dict[IRVar, Type], root_node: ast.Expression) -> lis
                         var_result = visit(block_st, e)
                     return var_result
                 return var_unit
+            
+            case ast.FunctionCall():
+                var_call = st.get_symbol(node.call.name)
+                var_args = []
+                for expr in node.args:
+                    var_arg = visit(st, expr)
+                    var_args.append(var_arg)
+                var_result = new_var(node.type)
+                instructions.append(ir.Call(loc, var_call, var_args, var_result))
+                return var_result
+            
+            case ast.WhileLoop():
+                l_cond = new_label()
+                l_body = new_label()
+                l_end = new_label()
+
+                instructions.append(l_cond)
+                var_cond = visit(st, node.cond)
+                instructions.append(ir.CondJump(loc, var_cond, l_body, l_end))
+
+                instructions.append(l_body)
+                visit(st, node.do)
+                instructions.append(ir.Jump(loc, l_cond))
+
+                instructions.append(l_end)
+                return var_unit
+            
+            case ast.UnaryOp():
+                var_right = visit(st, node.right)
+                var_result = new_var(var_types[var_right])
+                var_op = st.get_symbol(f'unary_{node.op}')
+                instructions.append(ir.Call(
+                    loc, var_op, [var_right], var_result
+                ))
+                return var_result
 
             case _:
                 raise Exception(f"Unsupported AST node: {node}")
@@ -125,8 +168,6 @@ def generate_ir(root_types: dict[IRVar, Type], root_node: ast.Expression) -> lis
         root_symtab.set_local(v.name, v)
 
     var_result = visit(root_symtab, root_node)
-    print(var_result)
-    print(var_types)
 
     if var_types[var_result] == Int:
         instructions.append(ir.Call(

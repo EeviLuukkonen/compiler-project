@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Dict, Generic, Optional, TypeVar, Union
 from compiler.ir import IRVar
-from compiler.types import Arithmetic, Bool, Comparison, Int, Logical, PrintBool, PrintInt, Type
+from compiler.types import Arithmetic, Bool, Comparison, Int, Logical, PrintBool, PrintInt, Type, Eq
 
 T = TypeVar('T', bound=Union[Type, IRVar])
 
@@ -51,6 +51,8 @@ root_types = {
     IRVar('>'): Comparison,
     IRVar('<='): Comparison,
     IRVar('>='): Comparison,
+    IRVar('=='): Eq,
+    IRVar('!='): Eq,
     IRVar('unary_-'): Int,
     IRVar('unary_not'): Bool,
     IRVar('or'): Logical,

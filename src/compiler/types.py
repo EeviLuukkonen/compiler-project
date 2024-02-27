@@ -36,6 +36,11 @@ class FunType(Type):
             and self.return_type == other.return_type
         )
 
+@dataclass
+class EqType(Type):
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, EqType)
+
 Int = BasicType('Int')
 Bool = BasicType('Bool')
 Unit = BasicType('Unit')
@@ -44,3 +49,4 @@ Comparison = FunType([Int, Int], Bool)
 Logical = FunType([Bool, Bool], Bool)
 PrintInt = FunType([Int], Unit)
 PrintBool = FunType([Bool], Unit)
+Eq = EqType()

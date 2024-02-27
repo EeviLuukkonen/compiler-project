@@ -1,6 +1,6 @@
 from compiler import ast
 from compiler.symtab import SymTab
-from compiler.types import BasicType, Bool, Int, FunType, Type, Unit
+from compiler.types import Bool, Int, FunType, Type, Unit
 
 def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
     def typecheck_expr(node: ast.Expression, symtab: SymTab) -> Type:
@@ -16,10 +16,14 @@ def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
             case ast.BinaryOp():
                 t1 = typecheck(node.left, symtab)
                 t2 = typecheck(node.right, symtab)
-                if node.op in ['=', '==', '!=']:
+                if node.op == '=':
                     if t1 != t2:
                         raise TypeError(f'Operator {node.op} expected same type on each side, got {t1} and {t2}')
                     return t1
+                elif node.op in ['==', '!=']:
+                    if t1 != t2:
+                        raise TypeError(f'Operator {node.op} expected same type on each side, got {t1} and {t2}')
+                    return Bool
                 op_type = symtab.get_symbol(node.op)
                 if isinstance(op_type, FunType):
                     if op_type.parameters != [t1, t2]:

@@ -280,6 +280,44 @@ def test_parser_block() -> None:
         ),
         loc=L
     )
+    assert parse(tokenize('{var x = 1; {var x = true}; x}')) == ast.Block(
+        expressions=[
+            ast.VariableDec(L,ast.Identifier(L,'x'), ast.Literal(L,1), var_type=None),
+            ast.Block(
+                loc=L,
+                expressions=[ast.VariableDec(L,ast.Identifier(L,'x'), ast.Literal(L,True), var_type=None)]
+            ),
+            ast.Identifier(L,'x')
+        ],
+        loc=L
+    )
+
+    assert parse(tokenize('{1+{}; 1}')) == ast.Block(
+        loc=L,
+        expressions=[
+            ast.BinaryOp(
+                loc=L,
+                left=ast.Literal(L,1),
+                op='+',
+                right=ast.Block(L, None)
+            ),
+            ast.Literal(L,1)
+        ]
+    )
+
+def test_multiple_expressions() -> None:
+    assert parse(tokenize('1+2; x')) == ast.Block(
+        loc=L,
+        expressions=[
+            ast.BinaryOp(
+                loc=L,
+                left= ast.Literal(L,1),
+                op='+',
+                right=ast.Literal(L,2)
+            ),
+            ast.Identifier(L, 'x')
+        ]
+    )
 
 def test_bool_literal() -> None:
     assert parse(tokenize('true')) == ast.Literal(

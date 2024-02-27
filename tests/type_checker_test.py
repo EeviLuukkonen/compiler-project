@@ -19,7 +19,7 @@ def test_type_checker() -> None:
     assert typecheck_helper('var x = 1; x = x + 1') == Int
     assert typecheck_helper('1 + 2 = 3') == Int   
     assert typecheck_helper('-1') == Int
-    assert typecheck_helper('1 + 2 == 3') == Int   
+    assert typecheck_helper('1 + 2 == 3') == Bool
     assert typecheck_helper('true != false') == Bool
     assert typecheck_helper('-3 > -2') == Bool
     assert typecheck_helper('var x = -1; -x') == Int
@@ -30,6 +30,10 @@ def test_type_checker() -> None:
     assert typecheck_helper('var x: Int = 2 + 1; x') == Int
     assert typecheck_helper('var x: (Int) => Unit = print_int') == Unit
     assert typecheck_helper('{}') == Unit
+    assert typecheck_helper('true or false') == Bool
+    assert typecheck_helper('1<2 and 2<=2') == Bool
+    assert typecheck_helper('true != false') == Bool
+
 
 
     assert_fails_typecheck('(1<2) +3')

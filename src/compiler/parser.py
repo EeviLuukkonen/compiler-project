@@ -294,8 +294,11 @@ def parse(tokens: list[Token]) -> ast.Expression:
             semicolon = False
             if peek().text == '}': # block ends
                 break
+            elif isinstance(expressions[-1], ast.Block): # previous expression is a block
+                if peek().text == ';':
+                    consume(';')
             elif peek(-1).text == '}': # expression inside a block ends in a block
-                if peek().text == ';': # only consumes optional semicolon if it exists
+                if peek().text == ';':
                     consume(';')
             else:
                 consume(';')
@@ -328,4 +331,5 @@ def parse(tokens: list[Token]) -> ast.Expression:
         return expressions[0]
     elif len(expressions) == 0:
         raise Exception('Empty input!')
+
     return ast.Block(Location(line=1, column=1), expressions)
