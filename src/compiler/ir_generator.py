@@ -2,7 +2,7 @@ from compiler import ast, ir
 from compiler.ir import IRVar
 from compiler.symtab import SymTab
 from compiler.tokenizer import Location
-from compiler.types import Bool, EqType, Int, Type, Unit
+from compiler.types import Bool, Int, Type, Unit
 
 def generate_ir(root_types: dict[IRVar, Type], root_node: ast.Expression) -> list[ir.Instruction]:
     var_types: dict[IRVar, Type] = root_types.copy()
@@ -62,6 +62,46 @@ def generate_ir(root_types: dict[IRVar, Type], root_node: ast.Expression) -> lis
                     loc, var_right, var_left
                 ))
                 return var_unit
+            
+            case ast.BinaryOp(op='or'):
+                l_skip = new_label()
+                l_right = new_label()
+                l_end = new_label()
+
+                var_left = visit(st, node.left)
+                instructions.append(ir.CondJump(loc, var_left, l_skip, l_right))
+
+                instructions.append(l_right)
+                var_right = visit(st, node.right)
+                var_result = new_var(Bool)
+                instructions.append(ir.Copy(loc, var_right, var_result))
+                instructions.append(ir.Jump(loc, l_end))
+
+                instructions.append(l_skip)
+                instructions.append(ir.LoadBoolConst(loc, True, var_result))
+
+                instructions.append(l_end)
+                return var_result
+
+            case ast.BinaryOp(op='and'):
+                l_right = new_label()
+                l_skip = new_label()
+                l_end = new_label()
+
+                var_left = visit(st, node.left)
+                instructions.append(ir.CondJump(loc, var_left, l_right, l_skip))
+
+                instructions.append(l_right)
+                var_right = visit(st, node.right)
+                var_result = new_var(Bool)
+                instructions.append(ir.Copy(loc, var_right, var_result))
+                instructions.append(ir.Jump(loc, l_end))
+
+                instructions.append(l_skip)
+                instructions.append(ir.LoadBoolConst(loc, False, var_result))
+
+                instructions.append(l_end)
+                return var_result
 
             case ast.BinaryOp():
                 var_op = st.get_symbol(node.op)
@@ -123,7 +163,7 @@ def generate_ir(root_types: dict[IRVar, Type], root_node: ast.Expression) -> lis
                     for e in node.expressions:
                         var_result = visit(block_st, e)
                     return var_result
-                return var_unit
+                return new_var(Unit)
             
             case ast.FunctionCall():
                 var_call = st.get_symbol(node.call.name)

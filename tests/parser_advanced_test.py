@@ -318,6 +318,31 @@ def test_multiple_expressions() -> None:
             ast.Identifier(L, 'x')
         ]
     )
+    assert parse(tokenize('''var x = false;
+    true or { x = true; true }; x''')) == ast.Block(
+        loc=L,
+        expressions=[
+            ast.VariableDec(
+                variable=ast.Identifier(L, 'x'),
+                value=ast.Literal(L, False),
+                loc=L,
+                var_type=None
+            ),
+            ast.BinaryOp(
+                loc=L,
+                left=ast.Literal(L,True),
+                op='or',
+                right=ast.Block(
+                    loc=L,
+                    expressions=[
+                        ast.BinaryOp(loc=L, left=ast.Identifier(L,'x'), op='=', right=ast.Literal(L,True)),
+                        ast.Literal(L, True)
+                    ]
+                )
+            ),
+            ast.Identifier(L, 'x')
+        ]
+    )
 
 def test_bool_literal() -> None:
     assert parse(tokenize('true')) == ast.Literal(

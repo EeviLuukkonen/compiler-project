@@ -38,8 +38,7 @@ class FunType(Type):
 
 @dataclass
 class EqType(Type):
-    def __eq__(self, other: object) -> bool:
-        return isinstance(other, EqType)
+    '''Class for equality and inequality'''
 
 Int = BasicType('Int')
 Bool = BasicType('Bool')

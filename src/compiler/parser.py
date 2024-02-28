@@ -324,6 +324,8 @@ def parse(tokens: list[Token]) -> ast.Expression:
 
         if peek().text == ';':
             consume(';')
+        elif peek(-1).text in [';', '}']: # last expression was/ended in block
+            continue
         elif pos < len(tokens):
             raise Exception(f'{peek().loc}: Expected ; between expressions, got {peek().text}')
 
