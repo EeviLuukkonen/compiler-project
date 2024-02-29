@@ -33,7 +33,7 @@ def test_type_checker() -> None:
     assert typecheck_helper('true or false') == Bool
     assert typecheck_helper('1<2 and 2<=2') == Bool
     assert typecheck_helper('true != false') == Bool
-
+    assert typecheck_helper('var n: Int = read_int(); n') == Int
 
 
     assert_fails_typecheck('(1<2) +3')

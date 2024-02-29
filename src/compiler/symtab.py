@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Dict, Generic, Optional, TypeVar, Union
 from compiler.ir import IRVar
-from compiler.types import Arithmetic, Bool, Comparison, Int, Logical, PrintBool, PrintInt, Type, Eq
+from compiler.types import Arithmetic, Bool, Comparison, Int, Logical, PrintBool, PrintInt, ReadInt, Type, Eq
 
 T = TypeVar('T', bound=Union[Type, IRVar])
 
@@ -39,7 +39,8 @@ top_level_symtab = {
     'or': Logical,
     'and': Logical,
     'print_int': PrintInt,
-    'print_bool': PrintBool
+    'print_bool': PrintBool,
+    'read_int': ReadInt
 }
 
 root_types = {
@@ -58,5 +59,6 @@ root_types = {
     IRVar('or'): Logical,
     IRVar('and'): Logical,
     IRVar('print_int'): PrintInt,
-    IRVar('print_bool'): PrintBool
+    IRVar('print_bool'): PrintBool,
+    IRVar('read_int'): ReadInt
 }

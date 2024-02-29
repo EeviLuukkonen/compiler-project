@@ -1,4 +1,6 @@
 import sys
+from compiler.assembler import assemble
+from compiler.assembly_generator import generate_assembly
 from compiler.interpreter import interpret
 from compiler.ir_generator import generate_ir
 from compiler.symtab import SymTab, top_level_symtab, root_types
@@ -60,7 +62,22 @@ def main() -> int:
         ast_node = parse(tokens)
         typecheck(ast_node, symtab)
         ir_instructions = generate_ir(root_types, ast_node)
+        print(ir_instructions)
         print("\n".join([str(ins) for ins in ir_instructions]))
+    elif command == 'asm':
+        tokens = tokenize(source_code)
+        ast_node = parse(tokens)
+        typecheck(ast_node, symtab)
+        ir_instructions = generate_ir(root_types, ast_node)
+        asm_code = generate_assembly(ir_instructions)
+        print(asm_code)
+    elif command=='compile':
+        tokens = tokenize(source_code)
+        ast_node = parse(tokens)
+        typecheck(ast_node, symtab)
+        ir_instructions = generate_ir(root_types, ast_node)
+        asm_code = generate_assembly(ir_instructions)
+        assemble(asm_code, 'compiled_program')
     else:
         print(f"Error: unknown command: {command}\n\n{usage}", file=sys.stderr)
         return 1
