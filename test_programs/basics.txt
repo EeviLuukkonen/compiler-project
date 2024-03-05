@@ -1,0 +1,24 @@
+print_bool(true);
+prints true
+false
+prints false
+
+---
+
+1
+prints 1
+
+---
+
+((1 + 2) / 3)
+prints 1
+
+---
+
+41932810482304
+prints 41932810482304
+
+---
+
+1<2
+prints true

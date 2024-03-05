@@ -1,6 +1,6 @@
 import dataclasses
 from compiler import ir
-from compiler.intrinsics import IntrinsicArgs, all_intrinsics 
+from compiler.intrinsics import IntrinsicArgs, all_intrinsics
 
 def generate_assembly(instructions: list[ir.Instruction]) -> str:
     assembly_code_lines = []
@@ -11,6 +11,8 @@ def generate_assembly(instructions: list[ir.Instruction]) -> str:
     emit('.global main')
     emit('.type main, @function')
     emit('.extern print_int')
+    emit('.extern print_bool')
+    emit('.extern read_int')
 
     emit('.section .text')
     emit('main:')
@@ -30,8 +32,14 @@ def generate_assembly(instructions: list[ir.Instruction]) -> str:
                 else:
                     emit(f'movabsq ${insn.value}, %rax')
                     emit(f'movq %rax, {locals.get_ref(insn.dest)}')
-            #case ir.Jump():
-            #    emit(f'jmp .L{insn.label.name}')
+            case ir.LoadBoolConst():
+                emit(f'movq ${int(insn.value)}, {locals.get_ref(insn.dest)}')
+            case ir.Jump():
+                emit(f'jmp .L{insn.label.name}')
+            case ir.CondJump():
+                emit(f'cmpq $0, {locals.get_ref(insn.cond)}')
+                emit(f'jne .L{insn.then_label.name}')
+                emit(f'jmp .L{insn.else_label.name}')
             case ir.Copy():
                 emit(f'movq {locals.get_ref(insn.source)}, %rax')
                 emit(f'movq %rax, {locals.get_ref(insn.dest)}')
@@ -45,10 +53,11 @@ def generate_assembly(instructions: list[ir.Instruction]) -> str:
                     instrinsic(args)
                     emit(f'movq %rax, {locals.get_ref(insn.dest)}')
                 else:
-                    assert insn.fun.name == 'print_int', 'TODO: othen functions'
-                    assert len(insn.args) == 1, 'TODO: support more args'
-                    emit(f'movq {locals.get_ref(insn.args[0])}, %rdi')
-                    emit('call print_int')
+                    for i, arg in enumerate(insn.args):
+                        register = ['%rdi', '%rsi', '%rdx', '%rcx', '%r8', '%r9'][i]
+                        emit(f'movq {locals.get_ref(arg)}, {register}')
+                    emit(f'call {insn.fun.name}')
+                    emit(f'movq %rax, {locals.get_ref(insn.dest)}')
             case _:
                 raise Exception(f'Unknown instruction: {type(insn)}')
 

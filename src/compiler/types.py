@@ -38,7 +38,7 @@ class FunType(Type):
 
 @dataclass
 class EqType(Type):
-    '''Class for equality and inequality'''
+    '''Class for equality == and inequality !='''
 
 Int = BasicType('Int')
 Bool = BasicType('Bool')

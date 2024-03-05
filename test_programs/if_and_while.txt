@@ -1,0 +1,22 @@
+if 2 == 2 then print_bool(true) else print_bool(false)
+prints true
+
+---
+
+if not not true then print_int(1 + 2)
+prints 3
+
+---
+
+var x = true;
+var y = 3;
+while x do {
+    print_bool(x);
+    {
+        if y > 0 then y = y-1
+    }
+    if y == 0 then x = false;
+}
+prints true
+prints true
+prints true

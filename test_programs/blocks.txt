@@ -1,0 +1,47 @@
+var x = 3; x = x + 3;x
+prints 6
+
+---
+
+var n: Int = read_int();
+input 5
+print_int(n);
+prints 5
+while n > 1 do {
+    if n % 2 == 0 then {
+        n = n / 2;
+    } else {
+        n = 3*n + 1;
+    }
+    print_int(n);
+}
+prints 16
+prints 8
+prints 4
+prints 2
+prints 1
+
+---
+
+{
+    var x = true;
+    var y = false;
+    x = y;
+    print_bool(y);
+    x
+};
+prints false
+prints false
+
+---
+
+{
+    var x = true;
+    var y = false;
+    x = y;
+    print_bool(y);
+    x;
+}
+prints false
+
+

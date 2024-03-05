@@ -294,12 +294,14 @@ def parse(tokens: list[Token]) -> ast.Expression:
             semicolon = False
             if peek().text == '}': # block ends
                 break
-            elif isinstance(expressions[-1], ast.Block): # previous expression is a block
+            if isinstance(expressions[-1], ast.Block): # previous expression is a block
                 if peek().text == ';':
                     consume(';')
+                    semicolon = True
             elif peek(-1).text == '}': # expression inside a block ends in a block
                 if peek().text == ';':
                     consume(';')
+                    semicolon = True
             else:
                 consume(';')
                 semicolon = True
@@ -313,6 +315,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
 
         if peek().text == ";": # optional last semicolon after block
             consume(';')
+            semicolon = True
 
         return ast.Block(loc, expressions)
 

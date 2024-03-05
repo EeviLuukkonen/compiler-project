@@ -10,8 +10,10 @@ def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
                     return Bool
                 elif isinstance(node.value, int):
                     return Int
+                elif node.value is None:
+                    return Unit
                 else:
-                    raise Exception(f"Don't know the type of literal: {node.value}")
+                    raise Exception(f"Don't know the type of literal: {node.value} at {node.loc}")
                 
             case ast.BinaryOp():
                 t1 = typecheck(node.left, symtab)
