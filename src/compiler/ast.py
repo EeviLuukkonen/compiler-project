@@ -3,7 +3,7 @@ from compiler.tokenizer import Location
 from compiler import types
 
 @dataclass
-class Expression:
+class Expression():
     "base class for expression ast nodes"
     loc: Location
     type: types.Type = field(kw_only=True, default_factory=lambda: types.Unit)
@@ -56,6 +56,19 @@ class VariableDec(Expression):
 class WhileLoop(Expression):
     cond: Expression
     do: Expression
+
+@dataclass
+class FunDefinition():
+    name: Identifier
+    params: list[Identifier]
+    body: Expression
+    return_type: TypeExpr
+
+@dataclass
+class Module:
+    "base class for expressions and fun definitions"
+    expr: Expression
+    funcs: list[FunDefinition]
 
 @dataclass
 class BasicTypeExpr(TypeExpr):

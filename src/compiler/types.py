@@ -22,8 +22,8 @@ class BasicType(Type):
 
 @dataclass
 class FunType(Type):
-    parameters: list[Type]
-    return_type: Type
+    parameters: list[BasicType]
+    return_type: BasicType
 
     def __eq__(self, other: object) -> bool:
         return (

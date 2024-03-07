@@ -2,7 +2,7 @@ from typing import List
 from compiler import ast
 from compiler.tokenizer import Location, Token
 
-def parse(tokens: list[Token]) -> ast.Expression:
+def parse(tokens: list[Token]) -> ast.Module:
     pos = 0
 
     def peek(offset: int = 0) -> Token:
@@ -22,6 +22,56 @@ def parse(tokens: list[Token]) -> ast.Expression:
         nonlocal pos
         pos += 1
         return token
+
+    def parse_module() -> ast.Module:
+        expressions: List[ast.Expression] = []
+        funcs: List[ast.FunDefinition] = []
+
+        while pos < len(tokens):
+            if peek().text == 'fun':
+                fun = parse_fun_definition()
+                funcs.append(fun)
+            else:
+                expression = parse_expression(parse_or())
+                expressions.append(expression)
+
+                if peek().text == ';':
+                    consume(';')
+                elif peek(-1).text in [';', '}']:
+                    continue
+                elif pos < len(tokens):
+                    raise Exception(f'{peek().loc}: Expected ; between expressions, got {peek().text}')
+            
+        if len(expressions) == 1:
+            return ast.Module(expr=expressions[0], funcs=funcs)
+        elif len(expressions) == 0:
+            raise Exception('Empty input!')
+
+        return ast.Module(expr=ast.Block(Location(line=1, column=1), expressions), funcs=funcs)
+
+    def parse_fun_definition() -> ast.FunDefinition:
+        consume('fun')
+        name = parse_identifier()
+        consume('(')
+        params: list[ast.Identifier] = []
+        while peek().text != ')':
+            param = parse_identifier()
+            consume(':')
+            parse_type_expression()
+            params.append(param)
+        
+        consume(')')
+        consume(':')
+        return_type = parse_type_expression()
+
+        body = parse_block()
+
+        return ast.FunDefinition(
+            name,
+            params,
+            body,
+            return_type
+        )
 
     def parse_expression(left: ast.Expression) -> ast.Expression:
         if peek().text == '=':
@@ -319,22 +369,4 @@ def parse(tokens: list[Token]) -> ast.Expression:
 
         return ast.Block(loc, expressions)
 
-    expressions: List[ast.Expression] = []
-
-    while pos < len(tokens):
-        expression = parse_expression(parse_or())
-        expressions.append(expression)
-
-        if peek().text == ';':
-            consume(';')
-        elif peek(-1).text in [';', '}']: # last expression was/ended in block
-            continue
-        elif pos < len(tokens):
-            raise Exception(f'{peek().loc}: Expected ; between expressions, got {peek().text}')
-
-    if len(expressions) == 1:
-        return expressions[0]
-    elif len(expressions) == 0:
-        raise Exception('Empty input!')
-
-    return ast.Block(Location(line=1, column=1), expressions)
+    return parse_module()

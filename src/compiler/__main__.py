@@ -56,14 +56,16 @@ def main() -> int:
     elif command == 'parse':
         print(parse(tokenize(source_code)))
     elif command == "typecheck":
-        print(typecheck(parse(tokenize(source_code)), symtab))
+        r = typecheck(parse(tokenize(source_code)), symtab)
+        print(r)
     elif command == 'ir':
         tokens = tokenize(source_code)
         ast_node = parse(tokens)
         typecheck(ast_node, symtab)
         ir_instructions = generate_ir(root_types, ast_node)
-        print(ir_instructions)
-        print("\n".join([str(ins) for ins in ir_instructions]))
+        for fun, instrs in ir_instructions.items():
+            print(fun)
+            print("\n".join([str(ins) for ins in instrs]))
     elif command == 'asm':
         tokens = tokenize(source_code)
         ast_node = parse(tokens)

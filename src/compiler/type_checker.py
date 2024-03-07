@@ -2,7 +2,13 @@ from compiler import ast
 from compiler.symtab import SymTab
 from compiler.types import Bool, Int, FunType, Type, Unit
 
-def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
+def typecheck(node: ast.Module | ast.Expression, symtab: SymTab) -> Type:
+    def define_function_type(node: ast.FunDefinition, symtab: SymTab) -> None:
+        name = node.name.name
+        param_t = [Int] # TODO: fix
+        return_t = node.return_type
+        symtab.set_local(str(name), FunType(param_t, return_t))
+
     def typecheck_expr(node: ast.Expression, symtab: SymTab) -> Type:
         match node:
             case ast.Literal():
@@ -95,9 +101,16 @@ def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
 
             case _:
                 raise Exception(f"Unsupported AST node {node}")
-        
-    result_type = typecheck_expr(node, symtab)
-    node.type = result_type
+    
+    if isinstance(node, ast.Module):
+        for fun in node.funcs:
+            define_function_type(fun, symtab)
+        print(symtab)
+        expression_result_type = typecheck_expr(node.expr, symtab)
+        node.expr.type = expression_result_type
+    else:
+        expression_result_type = typecheck_expr(node, symtab)
+        node.type = expression_result_type
 
-    return result_type
+    return expression_result_type
 
