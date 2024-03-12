@@ -64,3 +64,19 @@ class CondJump(Instruction):
     cond: IRVar
     then_label: Label
     else_label: Label
+
+@dataclass(frozen=True)
+class FunDef(Instruction):
+    name: IRVar
+    params: list[IRVar]
+    body: list[Instruction]
+
+@dataclass(frozen=True)
+class LoadIntParam(Instruction):
+    symbol: IRVar
+    dest: IRVar
+
+@dataclass(frozen=True)
+class LoadBoolParam(Instruction):
+    symbol: IRVar
+    dest: IRVar

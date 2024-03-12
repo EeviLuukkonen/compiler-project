@@ -46,6 +46,9 @@ def find_test_cases() -> list[_TestCase]:
                         else:
                             program += f'{line}\n'
 
+                    if outputs == []:
+                        outputs = ['']
+
                     test_case = _TestCase(
                         name=f'{filename[:-4]}_{test_num}',
                         inputs=inputs,

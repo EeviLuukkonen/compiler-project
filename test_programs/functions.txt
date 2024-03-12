@@ -1,0 +1,15 @@
+fun f(): Unit {
+    read_int()
+}
+
+---
+
+fun square(x: Int, y: Bool): Unit { 
+    print_int(x * x);
+    print_bool(not y)
+}; 
+
+square(3, true)
+
+prints 9
+prints false

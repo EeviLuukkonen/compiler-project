@@ -64,7 +64,7 @@ def main() -> int:
         typecheck(ast_node, symtab)
         ir_instructions = generate_ir(root_types, ast_node)
         for fun, instrs in ir_instructions.items():
-            print(fun)
+            print('.' + fun)
             print("\n".join([str(ins) for ins in instrs]))
     elif command == 'asm':
         tokens = tokenize(source_code)

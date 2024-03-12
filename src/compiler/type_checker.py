@@ -3,12 +3,6 @@ from compiler.symtab import SymTab
 from compiler.types import Bool, Int, FunType, Type, Unit
 
 def typecheck(node: ast.Module | ast.Expression, symtab: SymTab) -> Type:
-    def define_function_type(node: ast.FunDefinition, symtab: SymTab) -> None:
-        name = node.name.name
-        param_t = [Int] # TODO: fix
-        return_t = node.return_type
-        symtab.set_local(str(name), FunType(param_t, return_t))
-
     def typecheck_expr(node: ast.Expression, symtab: SymTab) -> Type:
         match node:
             case ast.Literal():
@@ -101,14 +95,23 @@ def typecheck(node: ast.Module | ast.Expression, symtab: SymTab) -> Type:
 
             case _:
                 raise Exception(f"Unsupported AST node {node}")
+
+    def define_function_type(node: ast.FunDefinition, symtab: SymTab) -> Type:
+        name = node.name.name
+        param_t = [pt.convert_to_basic_type() for pt in node.param_types]
+        return_t = node.return_type.convert_to_basic_type()
+        symtab.set_local(str(name), FunType(param_t, return_t))
+        return return_t
     
-    if isinstance(node, ast.Module):
+    if isinstance(node, ast.Module): # first iteration with module
         for fun in node.funcs:
-            define_function_type(fun, symtab)
-        print(symtab)
-        expression_result_type = typecheck_expr(node.expr, symtab)
-        node.expr.type = expression_result_type
-    else:
+            fun_t = define_function_type(fun, symtab)
+        if node.expr:
+            expression_result_type = typecheck_expr(node.expr, symtab)
+            node.expr.type = expression_result_type
+        else: # source code only includes function definition(s), no expression
+            return fun_t
+    else: # other iterations with expression
         expression_result_type = typecheck_expr(node, symtab)
         node.type = expression_result_type
 

@@ -9,7 +9,7 @@ class Expression():
     type: types.Type = field(kw_only=True, default_factory=lambda: types.Unit)
 
 @dataclass
-class TypeExpr:
+class TypeExpr():
     "base class for expression types"
 
 @dataclass
@@ -58,19 +58,6 @@ class WhileLoop(Expression):
     do: Expression
 
 @dataclass
-class FunDefinition():
-    name: Identifier
-    params: list[Identifier]
-    body: Expression
-    return_type: TypeExpr
-
-@dataclass
-class Module:
-    "base class for expressions and fun definitions"
-    expr: Expression
-    funcs: list[FunDefinition]
-
-@dataclass
 class BasicTypeExpr(TypeExpr):
     name: str
 
@@ -83,6 +70,9 @@ class BasicTypeExpr(TypeExpr):
         ) or (
             isinstance(other, types.BasicType) and self.name == other.name
         )
+    
+    def convert_to_basic_type(self) -> types.BasicType:
+        return types.BasicType(name=self.name)
 
 @dataclass
 class FunTypeExpr(TypeExpr):
@@ -103,3 +93,18 @@ class FunTypeExpr(TypeExpr):
 Int = BasicTypeExpr('Int')
 Bool = BasicTypeExpr('Bool')
 Unit = BasicTypeExpr('Unit')
+
+@dataclass
+class FunDefinition():
+    loc: Location
+    name: Identifier
+    params: list[Identifier]
+    param_types: list[BasicTypeExpr]
+    body: Expression
+    return_type: BasicTypeExpr
+
+@dataclass
+class Module:
+    "base class for expressions and fun definitions"
+    funcs: list[FunDefinition]
+    expr: Expression | None

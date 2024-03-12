@@ -42,33 +42,43 @@ def parse(tokens: list[Token]) -> ast.Module:
                 elif pos < len(tokens):
                     raise Exception(f'{peek().loc}: Expected ; between expressions, got {peek().text}')
             
-        if len(expressions) == 1:
-            return ast.Module(expr=expressions[0], funcs=funcs)
-        elif len(expressions) == 0:
+        if len(expressions) == 1: # one top level expression
+            return ast.Module(funcs=funcs, expr=expressions[0])
+        elif len(expressions) == 0 and len(funcs) > 0: # only function definition(s)
+            return ast.Module(funcs=funcs, expr=None)
+        elif len(expressions) == 0 and len(funcs) == 0:
             raise Exception('Empty input!')
 
-        return ast.Module(expr=ast.Block(Location(line=1, column=1), expressions), funcs=funcs)
+        return ast.Module(funcs=funcs, expr=ast.Block(Location(line=1, column=1), expressions))
 
     def parse_fun_definition() -> ast.FunDefinition:
+        loc = peek().loc
         consume('fun')
         name = parse_identifier()
         consume('(')
         params: list[ast.Identifier] = []
+        param_types: list[ast.BasicTypeExpr] = []
         while peek().text != ')':
+            if len(params) > 0:
+                consume(',')
             param = parse_identifier()
             consume(':')
-            parse_type_expression()
+            param_type = ast.BasicTypeExpr(consume().text)
+
             params.append(param)
-        
+            param_types.append(param_type)
+
         consume(')')
         consume(':')
-        return_type = parse_type_expression()
+        return_type = ast.BasicTypeExpr(consume().text)
 
         body = parse_block()
 
         return ast.FunDefinition(
+            loc,
             name,
             params,
+            param_types,
             body,
             return_type
         )

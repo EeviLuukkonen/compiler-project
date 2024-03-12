@@ -4,9 +4,10 @@ from compiler.intrinsics import IntrinsicArgs, all_intrinsics
 
 def generate_assembly(instructions: dict[str, list[ir.Instruction]]) -> str:
     assembly_code_lines = []
+
     def emit(line: str) -> None: assembly_code_lines.append(line)
 
-    locals = Locals(get_all_ir_variables(instructions))
+    locals = Locals(variables=get_all_ir_variables(instructions))
 
     emit('.global main')
     emit('.type main, @function')
@@ -16,7 +17,13 @@ def generate_assembly(instructions: dict[str, list[ir.Instruction]]) -> str:
 
     emit('.section .text')
 
+    param_registers = ['%rdi', '%rsi', '%rdx', '%rcx', '%r8', '%r9']
+
     for fun_name, fun_instructions in instructions.items():
+        #locals = Locals(variables=get_all_ir_variables(fun_instructions))
+        param_count = 0
+
+        emit('')
         emit(f'{fun_name}:')
         emit('pushq %rbp')
         emit('movq %rsp, %rbp')
@@ -28,23 +35,29 @@ def generate_assembly(instructions: dict[str, list[ir.Instruction]]) -> str:
                 case ir.Label():
                     emit('')
                     emit(f'.L{insn.name}:')
+
                 case ir.LoadIntConst():
                     if -2**31 <= insn.value < 2**31:
                         emit(f'movq ${insn.value}, {locals.get_ref(insn.dest)}')
                     else:
                         emit(f'movabsq ${insn.value}, %rax')
                         emit(f'movq %rax, {locals.get_ref(insn.dest)}')
+
                 case ir.LoadBoolConst():
                     emit(f'movq ${int(insn.value)}, {locals.get_ref(insn.dest)}')
+
                 case ir.Jump():
                     emit(f'jmp .L{insn.label.name}')
+
                 case ir.CondJump():
                     emit(f'cmpq $0, {locals.get_ref(insn.cond)}')
                     emit(f'jne .L{insn.then_label.name}')
                     emit(f'jmp .L{insn.else_label.name}')
+
                 case ir.Copy():
                     emit(f'movq {locals.get_ref(insn.source)}, %rax')
                     emit(f'movq %rax, {locals.get_ref(insn.dest)}')
+
                 case ir.Call():
                     if (instrinsic := all_intrinsics.get(insn.fun.name)) is not None:
                         args = IntrinsicArgs(
@@ -53,21 +66,25 @@ def generate_assembly(instructions: dict[str, list[ir.Instruction]]) -> str:
                             emit=emit
                         )
                         instrinsic(args)
-                        emit(f'movq %rax, {locals.get_ref(insn.dest)}')
                     else:
                         for i, arg in enumerate(insn.args):
-                            register = ['%rdi', '%rsi', '%rdx', '%rcx', '%r8', '%r9'][i]
-                            emit(f'movq {locals.get_ref(arg)}, {register}')
+                            emit(f'movq {locals.get_ref(arg)}, {param_registers[i]}')
                         emit(f'call {insn.fun.name}')
-                        emit(f'movq %rax, {locals.get_ref(insn.dest)}')
+                    emit(f'movq %rax, {locals.get_ref(insn.dest)}')
+
+                case ir.LoadIntParam() | ir.LoadBoolParam():
+                    dest_ref = locals.get_ref(insn.dest)
+                    emit(f'movq {param_registers[param_count]}, {dest_ref}')
+                    param_count += 1
+               
                 case _:
                     raise Exception(f'Unknown instruction: {type(insn)}')
-
-    emit('movq $0, %rax')
-    emit('movq %rbp, %rsp')
-    emit('popq %rbp')
-    emit('ret')
-    emit('')
+                
+        emit('movq $0, %rax')
+        emit('movq %rbp, %rsp')
+        emit('popq %rbp')
+        emit('ret')
+        emit('')
 
     return "\n".join(assembly_code_lines)
 
