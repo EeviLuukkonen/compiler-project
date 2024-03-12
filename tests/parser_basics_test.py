@@ -2,28 +2,31 @@ from compiler.tokenizer import tokenize, L
 from compiler.parser import parse
 from compiler import ast
 
+def parser_helper(s: str) -> ast.Expression | None:
+    return parse(tokenize(s)).expr
+
 def test_parser_basics() -> None:
-    assert parse(tokenize("1")) == ast.Literal(L, 1)
-    assert parse(tokenize('true')) == ast.Literal(L, True)
-    assert parse(tokenize("1 + 2")) == ast.BinaryOp(
+    assert parser_helper("1") == ast.Literal(L, 1)
+    assert parser_helper('true') == ast.Literal(L, True)
+    assert parser_helper("1 + 2") == ast.BinaryOp(
         left=ast.Literal(L, 1),
         op="+",
-        right = ast.Literal(L, 2),
+        right=ast.Literal(L, 2),
         loc=L
     )
-    assert parse(tokenize("a + 2")) == ast.BinaryOp(
+    assert parser_helper("a + 2") == ast.BinaryOp(
         left=ast.Identifier(L, "a"),
         op="+",
         right = ast.Literal(L, 2),
         loc=L
     )
-    assert parse(tokenize("a * 2")) == ast.BinaryOp(
+    assert parser_helper("a * 2") == ast.BinaryOp(
         left=ast.Identifier(L, "a"),
         op="*",
         right = ast.Literal(L, 2),
         loc=L
     )
-    assert parse(tokenize("a - 2 + 3")) == ast.BinaryOp(
+    assert parser_helper("a - 2 + 3") == ast.BinaryOp(
         left=ast.BinaryOp(
             left=ast.Identifier(L, "a"),
             op="-",
@@ -34,7 +37,7 @@ def test_parser_basics() -> None:
         right = ast.Literal(L, 3),
         loc=L
     )
-    assert parse(tokenize("a - 2 * 3")) == ast.BinaryOp(
+    assert parser_helper("a - 2 * 3") == ast.BinaryOp(
         left=ast.Identifier(L, "a"),
         op="-",
         right=ast.BinaryOp(
@@ -45,7 +48,7 @@ def test_parser_basics() -> None:
         ),
         loc=L
     )
-    assert parse(tokenize("1*a - 2 * 3")) == ast.BinaryOp(
+    assert parser_helper("1*a - 2 * 3") == ast.BinaryOp(
         left=ast.BinaryOp(
             left=ast.Literal(L, 1),
             op="*",
@@ -61,7 +64,7 @@ def test_parser_basics() -> None:
         ),
         loc=L
     )
-    assert parse(tokenize("a - 2 % 3")) == ast.BinaryOp(
+    assert parser_helper("a - 2 % 3") == ast.BinaryOp(
         left=ast.Identifier(L, "a"),
         op="-",
         right=ast.BinaryOp(
@@ -72,7 +75,7 @@ def test_parser_basics() -> None:
         ),
         loc=L
     )
-    assert parse(tokenize("(a - 2) * 3")) == ast.BinaryOp(
+    assert parser_helper("(a - 2) * 3") == ast.BinaryOp(
         left=ast.BinaryOp(
             left=ast.Identifier(L, "a"),
             op="-",
@@ -83,7 +86,7 @@ def test_parser_basics() -> None:
         right = ast.Literal(L, 3),
         loc=L
     )
-    assert parse(tokenize('1 + (2 < 3)')) == ast.BinaryOp(
+    assert parser_helper('1 + (2 < 3)') == ast.BinaryOp(
         left=ast.Literal(L, 1),
         op="+",
         right = ast.BinaryOp(
@@ -97,33 +100,33 @@ def test_parser_basics() -> None:
 
 def test_parser_error() -> None:
     try:
-        parse(tokenize("a - 2 * 3 b"))
+        parser_helper("a - 2 * 3 b")
         assert False
     except Exception as e:
         assert "Expected ; between expressions" in str(e)
 
     try:
-        parse(tokenize("a b -"))
+        parser_helper("a b -")
         assert False
     except Exception as e:
         assert "Expected ; between expressions" in str(e)
 
     try:
-        a = parse(tokenize(""))
+        a = parser_helper("")
         print(a)
         assert False
     except Exception as e:
         assert "Empty input!" in str(e)
 
     try:
-        parse(tokenize('{ a b }'))
+        parser_helper('{ a b }')
         assert False
     except Exception as e:
         assert 'expected ";"' in str(e)
     
 
 def test_parser_comparison() -> None:
-    assert parse(tokenize("a > 2 + 3")) == ast.BinaryOp(
+    assert parser_helper("a > 2 + 3") == ast.BinaryOp(
         left=ast.Identifier(L, "a"),
         op=">",
         right = ast.BinaryOp(
@@ -134,7 +137,7 @@ def test_parser_comparison() -> None:
         ),
         loc=L
     )
-    assert parse(tokenize("a >= 2 + 3")) == ast.BinaryOp(
+    assert parser_helper("a >= 2 + 3") == ast.BinaryOp(
         left=ast.Identifier(L, "a"),
         op=">=",
         right = ast.BinaryOp(
@@ -145,7 +148,7 @@ def test_parser_comparison() -> None:
         ),
         loc=L
     )
-    assert parse(tokenize("a == 2 < 3")) == ast.BinaryOp(
+    assert parser_helper("a == 2 < 3") == ast.BinaryOp(
         left=ast.Identifier(L, "a"),
         op="==",
         right = ast.BinaryOp(
@@ -156,7 +159,7 @@ def test_parser_comparison() -> None:
         ),
         loc=L
     )    
-    assert parse(tokenize("a < 2 != 3")) == ast.BinaryOp(
+    assert parser_helper("a < 2 != 3") == ast.BinaryOp(
         left=ast.BinaryOp(
             left=ast.Identifier(L, "a"),
             op="<",
@@ -169,14 +172,14 @@ def test_parser_comparison() -> None:
     ) 
 
 def test_parser_if() -> None:
-    assert parse(tokenize("if a then 2")) == ast.IfExpression(
+    assert parser_helper("if a then 2") == ast.IfExpression(
         cond=ast.Identifier(L, "a"),
         then_clause=ast.Literal(L, 2),
         else_clause=None,
         loc=L
     )
 
-    assert parse(tokenize("if a+2 then 2 else 3 / 4")) == ast.IfExpression(
+    assert parser_helper("if a+2 then 2 else 3 / 4") == ast.IfExpression(
         cond=ast.BinaryOp(
             left=ast.Identifier(L, "a"),
             op="+",
@@ -193,7 +196,7 @@ def test_parser_if() -> None:
         loc=L
     )
 
-    assert parse(tokenize("0 + if a+2 then 2 else 3 / 4")) == ast.BinaryOp(
+    assert parser_helper("0 + if a+2 then 2 else 3 / 4") == ast.BinaryOp(
         left=ast.Literal(L, 0),
         op="+",
         right=ast.IfExpression(
@@ -216,7 +219,7 @@ def test_parser_if() -> None:
     )
 
 def test_parser_functions() -> None:
-    assert parse(tokenize("f(x, y + z)")) == ast.FunctionCall(
+    assert parser_helper("f(x, y + z)") == ast.FunctionCall(
         call=ast.Identifier(L, 'f'),
         args=[
             ast.Identifier(L, 'x'),
@@ -230,7 +233,7 @@ def test_parser_functions() -> None:
         loc=L
     )
 
-    assert parse(tokenize("2 * f(x, y + z)")) == ast.BinaryOp(
+    assert parser_helper("2 * f(x, y + z)") == ast.BinaryOp(
         left=ast.Literal(L, 2),
         op="*",
         right=ast.FunctionCall(
@@ -249,7 +252,7 @@ def test_parser_functions() -> None:
         loc=L
     )
 
-    assert parse(tokenize("f(g(x))")) == ast.FunctionCall(
+    assert parser_helper("f(g(x))") == ast.FunctionCall(
         call=ast.Identifier(L, 'f'),
         args=[
             ast.FunctionCall(
@@ -264,7 +267,7 @@ def test_parser_functions() -> None:
     )
 
 def test_parser_and_or() -> None:
-    assert parse(tokenize("2 != 3 and a")) == ast.BinaryOp(
+    assert parser_helper("2 != 3 and a") == ast.BinaryOp(
         left=ast.BinaryOp(
             left=ast.Literal(L, 2),
             op='!=',
@@ -275,7 +278,7 @@ def test_parser_and_or() -> None:
         right=ast.Identifier(L, 'a'),
         loc=L
     )
-    assert parse(tokenize("2 != 3 and a and b")) == ast.BinaryOp(
+    assert parser_helper("2 != 3 and a and b") == ast.BinaryOp(
         left=ast.BinaryOp(
             left=ast.BinaryOp(
                 left=ast.Literal(L, 2),
@@ -292,7 +295,7 @@ def test_parser_and_or() -> None:
         loc=L
     )
 
-    assert parse(tokenize("2 != 3 or a")) == ast.BinaryOp(
+    assert parser_helper("2 != 3 or a") == ast.BinaryOp(
         left=ast.BinaryOp(
             left=ast.Literal(L, 2),
             op='!=',
@@ -304,7 +307,7 @@ def test_parser_and_or() -> None:
         loc=L
     )
 
-    assert parse(tokenize("2 and 3 or a")) == ast.BinaryOp(
+    assert parser_helper("2 and 3 or a") == ast.BinaryOp(
         left=ast.BinaryOp(
             left=ast.Literal(L, 2),
             op='and',
@@ -315,7 +318,7 @@ def test_parser_and_or() -> None:
         right=ast.Identifier(L, 'a'),
         loc=L
     )
-    assert parse(tokenize("2 or 3 and a")) == ast.BinaryOp(
+    assert parser_helper("2 or 3 and a") == ast.BinaryOp(
         left=ast.Literal(L, 2),
         op='or',
         right=ast.BinaryOp(
@@ -328,17 +331,17 @@ def test_parser_and_or() -> None:
     )
 
 def test_parser_unary() -> None:
-    assert parse(tokenize('not 3')) == ast.UnaryOp(
+    assert parser_helper('not 3') == ast.UnaryOp(
         op='not',
         right=ast.Literal(L, 3),
         loc=L
     )
-    assert parse(tokenize('- 3')) == ast.UnaryOp(
+    assert parser_helper('- 3') == ast.UnaryOp(
         op='-',
         right=ast.Literal(L, 3),
         loc=L
     )  
-    assert parse(tokenize('not not a')) == ast.UnaryOp(
+    assert parser_helper('not not a') == ast.UnaryOp(
         op='not',
         right=ast.UnaryOp(
             op='not',
@@ -347,7 +350,7 @@ def test_parser_unary() -> None:
         ),
         loc=L
     )
-    assert parse(tokenize('not-a')) == ast.UnaryOp(
+    assert parser_helper('not-a') == ast.UnaryOp(
         op='not',
         right=ast.UnaryOp(
             op='-',
