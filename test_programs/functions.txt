@@ -1,4 +1,4 @@
-fun f(): Unit {
+fun f(): Int {
     read_int()
 }
 
@@ -13,3 +13,145 @@ square(3, true)
 
 prints 9
 prints false
+
+---
+
+fun jee(a: Bool, b: Bool, c: Int): Unit {
+    var x = c;
+    print_bool(a or b);
+    print_int(x+1);
+    print_int(c)
+}
+
+jee(true, false, 3)
+
+prints true
+prints 4
+prints 3
+
+---
+
+fun third(x: Int): Int {
+    return x*x*x
+};
+
+third(2)
+
+prints 8
+
+---
+
+fun square(x: Int, y: Int): Int {
+    print_int(x+y);
+    return 2*x 
+};
+
+var x = square(3, 4);
+print_int(x)
+
+prints 7
+prints 6
+
+---
+
+fun f(): Int {
+    return 3
+}
+
+var x = f();
+print_int(x)
+
+prints 3
+
+---
+
+fun f(x: Int, y: Int, z: Bool): Unit {
+    while x>0 do {
+        print_int(x);
+        x = x-1
+    }
+    return
+}
+
+f(5, 1, 1<2)
+
+prints 5
+prints 4
+prints 3
+prints 2
+prints 1
+
+---
+
+fun f(): Int {
+    var x = 3;
+    return x
+}
+
+var x = 2;
+
+x = f();
+
+print_int(x)
+
+prints 3
+
+---
+
+fun square(x: Int): Int {
+    return x * x
+}
+
+fun vec_len_squared(x: Int, y: Int): Int {
+    return square(x) + square(y)
+}
+
+fun print_int_twice(x: Int): Unit {
+    print_int(x);
+    print_int(x);
+}
+
+print_int_twice(vec_len_squared(3, 4));
+
+prints 25
+prints 25
+
+---
+
+fun f(n: Int): Int {
+    if n > 0 then {
+        print_int(n);
+        f(n-1)
+    }
+    return print_int(0)
+}
+
+f(4)
+
+prints 4
+prints 3
+prints 2
+prints 1
+prints 0
+
+---
+
+fun f(n: Int): Unit {
+    if n > 0 then {
+        print_int(n);
+        g(n-1);
+    }
+}
+
+fun g(n: Int): Unit {
+    if n > 0 then {
+        print_int(n);
+        f(n-1)
+    }
+}
+
+f(3)
+
+prints 3
+prints 2
+prints 1

@@ -62,5 +62,5 @@ root_types = {
     IRVar('and'): Logical,
     IRVar('print_int'): PrintInt,
     IRVar('print_bool'): PrintBool,
-    IRVar('read_int'): ReadInt
+    IRVar('read_int'): ReadInt,
 }

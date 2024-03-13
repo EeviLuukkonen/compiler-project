@@ -202,6 +202,15 @@ def generate_ir(root_types: dict[IRVar, Type], root_node: ast.Module) -> dict[st
                     loc, var_op, [var_right], var_result
                 ))
                 return var_result
+            
+            case ast.Return():
+                if node.value:
+                    var_result = visit_expr(st, node.value, func_name)
+                    instructions[func_name].append(ir.Return(loc, var_result))
+                    return var_result
+                else:
+                    instructions[func_name].append(ir.Return(loc, var_unit))
+                    return var_unit
 
             case _:
                 raise Exception(f"Unsupported AST node: {node}")

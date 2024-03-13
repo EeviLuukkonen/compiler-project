@@ -37,7 +37,7 @@ def parse(tokens: list[Token]) -> ast.Module:
 
                 if peek().text == ';':
                     consume(';')
-                elif peek(-1).text in [';', '}']:
+                elif peek(-1).text in [';', '}']: # previous expression ends in a block
                     continue
                 elif pos < len(tokens):
                     raise Exception(f'{peek().loc}: Expected ; between expressions, got {peek().text}')
@@ -56,12 +56,14 @@ def parse(tokens: list[Token]) -> ast.Module:
         consume('fun')
         name = parse_identifier()
         consume('(')
+
         params: list[ast.Identifier] = []
         param_types: list[ast.BasicTypeExpr] = []
+
         while peek().text != ')':
             if len(params) > 0:
                 consume(',')
-            param = parse_identifier()
+            param = parse_identifier() # TODO: laajenna että funktiokutsu voi olla parametrina
             consume(':')
             param_type = ast.BasicTypeExpr(consume().text)
 
@@ -70,6 +72,7 @@ def parse(tokens: list[Token]) -> ast.Module:
 
         consume(')')
         consume(':')
+
         return_type = ast.BasicTypeExpr(consume().text)
 
         body = parse_block()
@@ -262,9 +265,9 @@ def parse(tokens: list[Token]) -> ast.Module:
         
     def parse_func_type_expression() -> ast.FunTypeExpr:
         consume('(')
-        parameters: list[ast.TypeExpr] = []
+        parameters: list[ast.BasicTypeExpr] = []
         while True:
-            parameters.append(parse_type_expression())
+            parameters.append(parse_type_expression()) # type: ignore[arg-type]
             if peek().text == ',':
                 consume(',')
             else:
@@ -273,7 +276,7 @@ def parse(tokens: list[Token]) -> ast.Module:
         consume('=>')
         return_type = parse_type_expression()
 
-        return ast.FunTypeExpr(parameters, return_type)
+        return ast.FunTypeExpr(parameters, return_type) # type: ignore[arg-type]
 
     def parse_if() -> ast.Expression:
         loc = peek().loc
@@ -321,6 +324,17 @@ def parse(tokens: list[Token]) -> ast.Module:
         else:
             raise Exception(f'Expected integer literal, found "{token.text}"')
         
+    def parse_return() -> ast.Return:
+        loc = peek().loc
+        consume('return')
+        if peek().text == '}':
+            value = None
+        else:
+            value = parse_expression(parse_or())
+        if peek().text != '}':
+            raise Exception(f'Return statement must be the last statement in a block')
+        return ast.Return(loc, value)
+
     def parse_identifier() -> ast.Identifier:
         token = peek()
         if token.type == 'identifier':
@@ -348,23 +362,27 @@ def parse(tokens: list[Token]) -> ast.Module:
         expressions: List[ast.Expression] = []
 
         while peek().text != '}':
-            expression = parse_expression(parse_or())
-            expressions.append(expression)
-
-            semicolon = False
-            if peek().text == '}': # block ends
-                break
-            if isinstance(expressions[-1], ast.Block): # previous expression is a block
-                if peek().text == ';':
-                    consume(';')
-                    semicolon = True
-            elif peek(-1).text == '}': # expression inside a block ends in a block
-                if peek().text == ';':
-                    consume(';')
-                    semicolon = True
+            if peek().text == 'return':
+                expressions.append(parse_return())
+                semicolon = False
             else:
-                consume(';')
-                semicolon = True
+                expression = parse_expression(parse_or())
+                expressions.append(expression)
+
+                semicolon = False
+                if peek().text == '}': # block ends
+                    break
+                if isinstance(expressions[-1], ast.Block): # previous expression is a block
+                    if peek().text == ';':
+                        consume(';')
+                        semicolon = True
+                elif peek(-1).text == '}': # expression inside a block ends in a block
+                    if peek().text == ';':
+                        consume(';')
+                        semicolon = True
+                else:
+                    consume(';')
+                    semicolon = True
         consume('}')
         
         if not expressions: # empty block

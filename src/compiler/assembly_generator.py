@@ -76,11 +76,16 @@ def generate_assembly(instructions: dict[str, list[ir.Instruction]]) -> str:
                     dest_ref = locals.get_ref(insn.dest)
                     emit(f'movq {param_registers[param_count]}, {dest_ref}')
                     param_count += 1
+
+                case ir.Return():
+                    emit(f'movq {locals.get_ref(insn.value)}, %rax')
                
                 case _:
                     raise Exception(f'Unknown instruction: {type(insn)}')
                 
-        emit('movq $0, %rax')
+        if fun_name == 'main':
+            emit('movq $0, %rax')
+
         emit('movq %rbp, %rsp')
         emit('popq %rbp')
         emit('ret')

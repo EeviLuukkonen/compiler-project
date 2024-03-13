@@ -493,10 +493,45 @@ def test_parser_location() -> None:
         loc=Location(line=2, column=9)
     )
 
-
 def test_parser_while() -> None:
     assert parser_helper("while true do 2") == ast.WhileLoop(
         cond=ast.Literal(L, True),
         do=ast.Literal(L, 2),
         loc=L
     )
+
+def test_parser_functions() -> None:
+    assert parse(tokenize(('fun f(a: Int): Int {return a}'))).funcs == [ast.FunDefinition(
+        loc=L,
+        name=ast.Identifier(L, 'f'),
+        params=[ast.Identifier(L, 'a')],
+        param_types=[ast.Int],
+        return_type=ast.Int,
+        body=ast.Block(
+            loc=L,
+            expressions=[
+                ast.Return(L, ast.Identifier(L, 'a'))
+            ]
+        )
+    )]
+
+    assert parse(tokenize(('fun f(): Bool {return true}'))).funcs == [ast.FunDefinition(
+        loc=L,
+        name=ast.Identifier(L, 'f'),
+        params=[],
+        param_types=[],
+        return_type=ast.Bool,
+        body=ast.Block(
+            loc=L,
+            expressions=[
+                ast.Return(L, ast.Literal(L, True))
+            ]
+        )
+    )]
+
+    try:
+        parse(tokenize(('fun f(a: Int): Int {return a; return true}')))
+        assert False
+    except Exception as e:
+            assert 'Return' in str(e)
+

@@ -58,6 +58,10 @@ class WhileLoop(Expression):
     do: Expression
 
 @dataclass
+class Return(Expression):
+    value: Expression | None
+
+@dataclass
 class BasicTypeExpr(TypeExpr):
     name: str
 
@@ -76,8 +80,8 @@ class BasicTypeExpr(TypeExpr):
 
 @dataclass
 class FunTypeExpr(TypeExpr):
-    parameters: list[TypeExpr]
-    return_type: TypeExpr
+    parameters: list[BasicTypeExpr]
+    return_type: BasicTypeExpr
 
     def __eq__(self, other: object) -> bool:
         return (
@@ -100,7 +104,7 @@ class FunDefinition():
     name: Identifier
     params: list[Identifier]
     param_types: list[BasicTypeExpr]
-    body: Expression
+    body: Block
     return_type: BasicTypeExpr
 
 @dataclass

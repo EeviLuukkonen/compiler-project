@@ -3,6 +3,7 @@ from compiler.symtab import SymTab
 from compiler.types import Bool, Int, FunType, Type, Unit
 
 def typecheck(node: ast.Module | ast.Expression, symtab: SymTab) -> Type:
+    basic_types = ['Int', 'Bool', 'Unit']
     def typecheck_expr(node: ast.Expression, symtab: SymTab) -> Type:
         match node:
             case ast.Literal():
@@ -53,6 +54,15 @@ def typecheck(node: ast.Module | ast.Expression, symtab: SymTab) -> Type:
                 name = node.variable.name
                 t = typecheck(node.value, symtab)
                 if node.var_type:
+                    if isinstance(node.var_type, ast.BasicTypeExpr):
+                        if node.var_type.name not in basic_types:
+                            raise TypeError(f'Unknown type: {node.var_type}')
+                    elif isinstance(node.var_type, ast.FunTypeExpr):
+                        for p in node.var_type.parameters:
+                            if p.name not in basic_types:
+                                raise TypeError(f'Unknown type: {p}')
+                        if node.var_type.return_type.name not in basic_types:
+                            raise TypeError(f'Unknown type: {node.var_type.return_type}')
                     if not node.var_type == t:
                         raise TypeError(f'Variable {name} expected type {node.var_type}, got {t}')
                 symtab.set_local(str(name), t)
@@ -82,7 +92,7 @@ def typecheck(node: ast.Module | ast.Expression, symtab: SymTab) -> Type:
                     for arg, param_t in zip(args, fun_type.parameters):
                         arg_t = typecheck(arg, symtab)
                         if arg_t != param_t:
-                            raise TypeError(f"Function parameter {arg} has type {arg_t} but expects {param_t}")
+                            raise TypeError(f"Function parameter at {arg.loc} has type {arg_t} but expects {param_t}")
                     return fun_type.return_type
                 raise Exception(f'Unknown function: {node.call.name}')
             
@@ -93,15 +103,37 @@ def typecheck(node: ast.Module | ast.Expression, symtab: SymTab) -> Type:
                 t2 = typecheck(node.do, symtab)
                 return t2
 
+            case ast.Return():
+                if node.value is None:
+                    return Unit
+                return typecheck(node.value, symtab)
+
             case _:
                 raise Exception(f"Unsupported AST node {node}")
 
     def define_function_type(node: ast.FunDefinition, symtab: SymTab) -> Type:
         name = node.name.name
         param_t = [pt.convert_to_basic_type() for pt in node.param_types]
-        return_t = node.return_type.convert_to_basic_type()
-        symtab.set_local(str(name), FunType(param_t, return_t))
-        return return_t
+        declared_return_t = node.return_type.convert_to_basic_type()
+
+        for pt in param_t:
+            if pt.name not in basic_types:
+                raise TypeError(f'Unknown parameter type {pt} in function definition')
+        
+        if declared_return_t.name not in ['Int', 'Bool', 'Unit']:
+            raise TypeError(f'Unknown return type in function definition: {declared_return_t}')
+        
+        for param, param_type in zip(node.params, param_t):
+            symtab.set_local(param.name, param_type)
+        print(symtab)
+        
+        actual_return_t = typecheck(node.body, symtab)
+        
+        if actual_return_t != declared_return_t:
+            raise TypeError(f'Function {name} expected return type {declared_return_t}, got {actual_return_t}')
+        
+        symtab.set_local(str(name), FunType(param_t, declared_return_t))
+        return declared_return_t
     
     if isinstance(node, ast.Module): # first iteration with module
         for fun in node.funcs:

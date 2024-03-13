@@ -27,13 +27,12 @@ class Token:
     loc: Location
 
     def __eq__(self, other: Any) -> bool:
-        if self.loc == L or other.loc == L:
-            return True
+        loc_eq = self.loc == L or other.loc == L or self.loc == other.loc
 
         return (
             self.text == other.text
             and self.type == other.type
-            and self.loc == other.loc
+            and loc_eq
         )
 
 def tokenize(source_code: str) -> list[Token]:
