@@ -38,6 +38,7 @@ def test_type_checker() -> None:
     assert typecheck_helper('fun square(x: Int): Int { return x * x }') == Int
     assert typecheck_helper('fun square(x: Int): Int { return x * x }; square(3)') == Int
     assert typecheck_helper('fun f(x: Int): Int { return f(x-1) }') == Int
+    assert typecheck_helper('while true do break') == Unit
 
 
     assert_fails_typecheck('(1<2) +3')

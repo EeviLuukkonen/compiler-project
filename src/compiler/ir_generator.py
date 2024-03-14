@@ -27,8 +27,8 @@ def generate_ir(root_types: dict[IRVar, Type], root_node: ast.Module) -> dict[st
         return label
     
     instructions: dict[str, list[ir.Instruction]] = {'main': []}
-    functions: list[ast.FunDefinition] = []
 
+    loop_labels: list[tuple[ir.Label, ir.Label]] = []
 
     def visit_expr(st: SymTab[IRVar], node: ast.Expression, func_name: str) -> IRVar:
         loc = node.loc
@@ -187,6 +187,8 @@ def generate_ir(root_types: dict[IRVar, Type], root_node: ast.Module) -> dict[st
                 l_body = new_label('while_body')
                 l_end = new_label('while_end')
 
+                loop_labels.append((l_cond, l_end))
+
                 instructions[func_name].append(l_cond)
                 var_cond = visit_expr(st, node.cond, func_name)
                 instructions[func_name].append(ir.CondJump(loc, var_cond, l_body, l_end))
@@ -196,6 +198,9 @@ def generate_ir(root_types: dict[IRVar, Type], root_node: ast.Module) -> dict[st
                 instructions[func_name].append(ir.Jump(loc, l_cond))
 
                 instructions[func_name].append(l_end)
+
+                loop_labels.pop()
+
                 return var_unit
             
             case ast.UnaryOp():
@@ -215,6 +220,17 @@ def generate_ir(root_types: dict[IRVar, Type], root_node: ast.Module) -> dict[st
                 else:
                     instructions[func_name].append(ir.Return(loc, var_unit))
                     return var_unit
+                
+            case ast.BreakContinue():
+                if loop_labels == []:
+                    raise Exception(f"Break/continue cannot exist outside of while loop")
+
+                l_start, l_end = loop_labels[-1]
+                if node.name == 'break':
+                    instructions[func_name].append(ir.Jump(loc, l_end))
+                else:
+                    instructions[func_name].append(ir.Jump(loc, l_start))
+                return var_unit
 
             case _:
                 raise Exception(f"Unsupported AST node: {node}")

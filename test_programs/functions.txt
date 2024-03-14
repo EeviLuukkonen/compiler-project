@@ -185,7 +185,7 @@ f(g())
 prints true
 
 ---
-
+#14
 fun f(x: Int): Int {
     return -x
 }
@@ -193,3 +193,45 @@ fun f(x: Int): Int {
 f(-2)
 
 prints 2
+
+---
+#15
+fun f(): Unit {
+    var i = 0;
+    while i < 10 do {
+        if i == 5 then {
+            break;
+        }
+        print_int(i);
+        i = i + 1;
+    }
+
+    i = 0;
+    while i < 10 do {
+        if i == 5 then {
+            i = i + 1;
+            continue;
+        }
+        print_int(i);
+        i = i + 1;
+    }
+}
+
+f()
+
+prints 0
+prints 1
+prints 2
+prints 3
+prints 4
+
+prints 0
+prints 1
+prints 2
+prints 3
+prints 4
+
+prints 6
+prints 7
+prints 8
+prints 9

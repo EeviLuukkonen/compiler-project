@@ -111,6 +111,9 @@ def typecheck(node: ast.Module, symtab: SymTab[Type]) -> Type:
                 if node.value is None:
                     return assign_type_to_expr(node, Unit)
                 return typecheck_expr(node.value, symtab)
+            
+            case ast.BreakContinue():
+                return assign_type_to_expr(node, Unit)
 
             case _:
                 raise Exception(f"Unsupported AST node {node}")
