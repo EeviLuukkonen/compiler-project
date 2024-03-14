@@ -44,4 +44,19 @@ prints false
 }
 prints false
 
+---
+
+{
+    {
+        var x = true;
+        while x do {
+            print_bool(x);
+            x = false
+        }
+        return 3
+    };
+}
+
+prints true
+prints 3
 

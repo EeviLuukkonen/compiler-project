@@ -169,7 +169,11 @@ def generate_ir(root_types: dict[IRVar, Type], root_node: ast.Module) -> dict[st
                 return new_var(Unit)
             
             case ast.FunctionCall():
-                var_call = st.get_symbol(node.call.name)
+                try:
+                    var_call = st.get_symbol(node.call.name)
+                except TypeError: # function not found, assume it's a recursive call
+                    var_call = IRVar(node.call.name)
+                    st.set_local(node.call.name, var_call)
                 var_args = []
                 for expr in node.args:
                     var_arg = visit_expr(st, expr, func_name)
@@ -218,8 +222,9 @@ def generate_ir(root_types: dict[IRVar, Type], root_node: ast.Module) -> dict[st
     def visit_func(st: SymTab[IRVar], funcs: list[ast.FunDefinition]) -> None:
         for fun in funcs:
             loc = fun.loc
-            func_st = st.create_inner_tab()
             func_name = fun.name.name
+            st.set_local(func_name, IRVar(func_name))
+            func_st = st.create_inner_tab()
             instructions[func_name] = []
 
             for param, param_type in zip(fun.params, fun.param_types):
@@ -231,8 +236,6 @@ def generate_ir(root_types: dict[IRVar, Type], root_node: ast.Module) -> dict[st
                 func_st.set_local(param.name, var_param)
 
             visit_expr(func_st, fun.body, func_name)
-
-            st.set_local(func_name, IRVar(func_name))
     
     root_symtab = SymTab[IRVar](locals={}, parent=None)
     for v in root_types.keys():

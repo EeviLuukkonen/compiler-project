@@ -63,7 +63,7 @@ def parse(tokens: list[Token]) -> ast.Module:
         while peek().text != ')':
             if len(params) > 0:
                 consume(',')
-            param = parse_identifier() # TODO: laajenna että funktiokutsu voi olla parametrina
+            param = parse_identifier()
             consume(':')
             param_type = ast.BasicTypeExpr(consume().text)
 
@@ -227,6 +227,8 @@ def parse(tokens: list[Token]) -> ast.Module:
             return parse_bool_literal()
         elif peek().text == 'while':
             return parse_while_loop()
+        elif peek().text in ['break', 'continue']:
+            return parse_break_and_continue()
         elif peek().type == 'int_literal':
             return parse_int_literal()
         elif peek().type == 'identifier':
@@ -305,6 +307,16 @@ def parse(tokens: list[Token]) -> ast.Module:
         consume(')')
         return expr
     
+    def parse_break_and_continue() -> ast.Expression:
+        loc = peek().loc
+        if peek().text == 'break':
+            consume('break')
+            name = 'break'
+        else:
+            consume('continue')
+            name = 'continue'
+        return ast.BreakContinue(loc, name)
+
     def parse_bool_literal() -> ast.Literal:
         token = peek()
         if token.text == 'true':

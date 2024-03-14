@@ -493,12 +493,27 @@ def test_parser_location() -> None:
         loc=Location(line=2, column=9)
     )
 
-def test_parser_while() -> None:
+def test_parser_loops() -> None:
     assert parser_helper("while true do 2") == ast.WhileLoop(
         cond=ast.Literal(L, True),
         do=ast.Literal(L, 2),
         loc=L
     )
+    assert parser_helper("while true do break") == ast.WhileLoop(
+        cond=ast.Literal(L, True),
+        do=ast.BreakContinue(L, 'break'),
+        loc=L
+    )
+    assert parser_helper("{if true then continue}") == ast.Block(
+        expressions=[ast.IfExpression(
+            cond=ast.Literal(L, True),
+            then_clause=ast.BreakContinue(L, 'continue'),
+            else_clause=None,
+            loc=L
+        )],
+        loc=L
+    )
+
 
 def test_parser_functions() -> None:
     assert parse(tokenize(('fun f(a: Int): Int {return a}'))).funcs == [ast.FunDefinition(

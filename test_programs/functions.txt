@@ -1,9 +1,10 @@
+#1
 fun f(): Int {
     read_int()
 }
 
 ---
-
+#2
 fun square(x: Int, y: Bool): Unit { 
     print_int(x * x);
     print_bool(not y)
@@ -15,7 +16,7 @@ prints 9
 prints false
 
 ---
-
+#3
 fun jee(a: Bool, b: Bool, c: Int): Unit {
     var x = c;
     print_bool(a or b);
@@ -30,7 +31,7 @@ prints 4
 prints 3
 
 ---
-
+#4
 fun third(x: Int): Int {
     return x*x*x
 };
@@ -40,7 +41,7 @@ third(2)
 prints 8
 
 ---
-
+#5
 fun square(x: Int, y: Int): Int {
     print_int(x+y);
     return 2*x 
@@ -53,7 +54,7 @@ prints 7
 prints 6
 
 ---
-
+#6
 fun f(): Int {
     return 3
 }
@@ -64,7 +65,7 @@ print_int(x)
 prints 3
 
 ---
-
+#7
 fun f(x: Int, y: Int, z: Bool): Unit {
     while x>0 do {
         print_int(x);
@@ -82,7 +83,7 @@ prints 2
 prints 1
 
 ---
-
+#8
 fun f(): Int {
     var x = 3;
     return x
@@ -97,7 +98,7 @@ print_int(x)
 prints 3
 
 ---
-
+#9
 fun square(x: Int): Int {
     return x * x
 }
@@ -117,13 +118,13 @@ prints 25
 prints 25
 
 ---
-
-fun f(n: Int): Int {
+#10
+fun f(n: Int): Unit {
     if n > 0 then {
         print_int(n);
         f(n-1)
     }
-    return print_int(0)
+    return
 }
 
 f(4)
@@ -132,10 +133,23 @@ prints 4
 prints 3
 prints 2
 prints 1
-prints 0
 
 ---
+#11
+fun f(): Int {
+    return g()
+}
 
+fun g(): Int {
+    return 3
+}
+
+f()
+
+prints 3
+
+---
+#12
 fun f(n: Int): Unit {
     if n > 0 then {
         print_int(n);
@@ -155,3 +169,27 @@ f(3)
 prints 3
 prints 2
 prints 1
+
+---
+#13
+fun f(x: Int): Bool {
+    return x < 3
+}
+
+fun g(): Int {
+    return 2
+}
+
+f(g())
+
+prints true
+
+---
+
+fun f(x: Int): Int {
+    return -x
+}
+
+f(-2)
+
+prints 2

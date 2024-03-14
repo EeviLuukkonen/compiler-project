@@ -62,6 +62,10 @@ class Return(Expression):
     value: Expression | None
 
 @dataclass
+class BreakContinue(Expression):
+    name: str
+
+@dataclass
 class BasicTypeExpr(TypeExpr):
     name: str
 

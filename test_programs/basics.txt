@@ -1,6 +1,7 @@
 print_bool(true);
-prints true
 false
+
+prints true
 prints false
 
 ---

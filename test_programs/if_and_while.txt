@@ -20,3 +20,12 @@ while x do {
 prints true
 prints true
 prints true
+
+---
+
+var y = 3;
+
+while true do {
+    y = y-1;
+    if y > 0 then break
+}
