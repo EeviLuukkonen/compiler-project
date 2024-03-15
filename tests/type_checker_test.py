@@ -25,7 +25,7 @@ def test_type_checker() -> None:
     assert typecheck_helper('var x = -1; -x') == Int
     assert typecheck_helper('print_int(2)') == Unit
     assert typecheck_helper('print_bool(true)') == Unit
-    assert typecheck_helper('1 + while true do 3 + 2') == Int
+    assert typecheck_helper('1; while true do 3 + 2') == Unit
     assert typecheck_helper('var x: Int = 2 + 1') == Unit
     assert typecheck_helper('var x: Int = 2 + 1; x') == Int
     assert typecheck_helper('var x: (Int) => Unit = print_int') == Unit
@@ -39,6 +39,7 @@ def test_type_checker() -> None:
     assert typecheck_helper('fun square(x: Int): Int { return x * x }; square(3)') == Int
     assert typecheck_helper('fun f(x: Int): Int { return f(x-1) }') == Int
     assert typecheck_helper('while true do break') == Unit
+    assert typecheck_helper('{var x = 3; {var x = 2}; print_int(x)}') == Unit
 
 
     assert_fails_typecheck('(1<2) +3')
@@ -61,6 +62,7 @@ def test_type_checker() -> None:
     assert_fails_typecheck('fun f(): Int { return true }')
     assert_fails_typecheck('fun f(x: Int): Int { print_int(x * x); }')
     assert_fails_typecheck('fun f(n: Int): Unit { if n > 0 then { g(n-1); }}; f(3)')
+    assert_fails_typecheck('var x = 3; var x = 3')
 
 def typecheck_helper(code: str) -> Any:
     expr = parse(tokenize(code))

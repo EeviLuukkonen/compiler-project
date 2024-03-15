@@ -52,6 +52,8 @@ def typecheck(node: ast.Module, symtab: SymTab[Type]) -> Type:
             
             case ast.VariableDec():
                 name = node.variable.name
+                if name in symtab.locals:
+                    raise TypeError(f'Variable {name} is already declared in this scope')
                 t = typecheck_expr(node.value, symtab)
                 if node.var_type:
                     if isinstance(node.var_type, ast.BasicTypeExpr):
@@ -105,7 +107,7 @@ def typecheck(node: ast.Module, symtab: SymTab[Type]) -> Type:
                 if t1 is not Bool:
                     raise TypeError(f"While-loop condition was {t1}, expected boolean")
                 t2 = typecheck_expr(node.do, symtab)
-                return assign_type_to_expr(node, t2)
+                return assign_type_to_expr(node, Unit)
 
             case ast.Return():
                 if node.value is None:
