@@ -1,3 +1,7 @@
+# Compiler project
+
+Basic compiler for a made-up programming language.
+Completed for course Compilers which is part of CS Master's Degree at University of Helsinki.
 
 ## Setup
 
@@ -30,14 +34,29 @@ Typecheck and run tests:
     poetry run mypy .
     poetry run pytest -vv
 
+## Usage
+
 Run the compiler on a source code file:
 
     ./compiler.sh COMMAND path/to/source/code
 
+Or write source code straight to terminal:
+
+    ./compiler.sh COMMAND <<< '*source code*'
+
 where `COMMAND` may be one of these:
 
+    tokenize
+    parse
     interpret
-    TODO(student): add more
+    typecheck
+    ir
+    asm
+    compile
+
+Mode detailed usage information with:
+
+    ./compiler.sh -h
 
 ## IDE setup
 

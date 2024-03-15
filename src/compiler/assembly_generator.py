@@ -20,16 +20,17 @@ def generate_assembly(instructions: dict[str, list[ir.Instruction]]) -> str:
     param_registers = ['%rdi', '%rsi', '%rdx', '%rcx', '%r8', '%r9']
 
     for fun_name, fun_instructions in instructions.items():
-        #locals = Locals(variables=get_all_ir_variables(fun_instructions))
         param_count = 0
 
         emit('')
         emit(f'{fun_name}:')
+        emit('')
         emit('pushq %rbp')
         emit('movq %rsp, %rbp')
         emit(f'subq ${locals.stack_used()}, %rsp')
 
         for insn in fun_instructions:
+            emit('')
             emit('# ' + str(insn))
             match insn:
                 case ir.Label():
@@ -83,6 +84,7 @@ def generate_assembly(instructions: dict[str, list[ir.Instruction]]) -> str:
                 case _:
                     raise Exception(f'Unknown instruction: {type(insn)}')
                 
+        emit('')
         if fun_name == 'main':
             emit('movq $0, %rax')
 

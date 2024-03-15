@@ -37,8 +37,8 @@ def interpret(node: ast.Module) -> Value:
                     else:
                         return interpret_expr(node.else_clause)
                 else:
-                    if interpret_expr(node.cond):
-                        interpret_expr(node.then_clause)
+                    if interpret_expr(node.cond):                        
+                        return interpret_expr(node.then_clause)
                     return None
             
             case _:

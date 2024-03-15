@@ -12,9 +12,21 @@ from compiler.type_checker import typecheck
 usage = f"""
 Usage: {sys.argv[0]} <command> [source_code_file]
 
+Command 'tokenize':
+    Tokenizes source code and prints the tokens.
 Command 'interpret':
-    Runs the interpreter on source code.
-
+    Runs the interpreter on source code. Only supports binary operations and if-then-else expressions with literals.
+Command 'parse':
+    Parses source code and prints the AST.
+Command 'typecheck':
+    Typechecks source code and prints its result type.
+Command 'ir':
+    Runs the IR generator on source code and prints the IR instructions.
+Command 'asm':
+    Generates assembly code from the source code.
+Command 'compile':
+    Runs all of the steps above and assembles source code into executable machine code file 'compiled_program'.
+    See result of compilation by running './compiled_program'.
 Common arguments:
     source_code_file        Optional. Defaults to standard input if missing.
  """.strip() + "\n"
@@ -50,21 +62,27 @@ def main() -> int:
 
     source_code = read_source_code()
     if command == 'interpret':
-        print(interpret(parse(tokenize(source_code))))
+        result = interpret(parse(tokenize(source_code)))
+        print(result)
     elif command == 'tokenize':
-        print(tokenize(source_code))
+        tokenized_source_code = tokenize(source_code)
+        print('\nTokenized source code:\n')
+        print("\n".join([str(token) for token in tokenized_source_code]))
     elif command == 'parse':
-        print(parse(tokenize(source_code)))
+        parsed_source_code = parse(tokenize(source_code))
+        print('\nParsed source code:\n')
+        print(parsed_source_code, '\n')
     elif command == "typecheck":
-        r = typecheck(parse(tokenize(source_code)), symtab)
-        print(r)
+        typechecked_source_code = typecheck(parse(tokenize(source_code)), symtab)
+        print('Source code\'s return type:\n')
+        print(typechecked_source_code)
     elif command == 'ir':
         tokens = tokenize(source_code)
         ast_node = parse(tokens)
         typecheck(ast_node, symtab)
         ir_instructions = generate_ir(root_types, ast_node)
         for fun, instrs in ir_instructions.items():
-            print('.' + fun)
+            print(f"{fun}:")
             print("\n".join([str(ins) for ins in instrs]))
     elif command == 'asm':
         tokens = tokenize(source_code)
